@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechHome | Loja de Tecnologia & Suporte Humano ao Vivo 24/7</title>
+  <meta name="description" content="TechHome - A melhor experiência em eletrônicos premium, fones com cancelamento de ruído, smartwatches e games com atendimento humano ao vivo 24 horas por dia.">
+  <meta name="keywords" content="e-commerce, loja virtual, tecnologia, gadgets, suporte ao cliente, chat ao vivo, entrega rapida">
+  
+  <!-- Tipografia do Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
+  
+  <!-- Folha de Estilos -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Barra Superior de Avisos & Status do Suporte -->
+  <aside class="announcement-bar" aria-label="Avisos e Ofertas">
+    <div class="announcement-content container">
+      <div class="announcement-badge">
+        <span class="pulse-dot"></span>
+        <span>🔥 OFERTA RELÂMPAGO: Use o cupom <strong>DESCONTO20</strong> e ganhe 20% OFF!</span>
+      </div>
+      <div class="announcement-support">
+        <span class="live-indicator">
+          <span class="agent-avatar-mini" style="background-image: url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80')"></span>
+          <span>Suporte ao Cliente <strong>ONLINE</strong> (Tempo médio &lt; 1 min)</span>
+        </span>
+        <button class="btn-text-link" id="topChatTriggerBtn" aria-label="Abrir chat de suporte">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Falar com um Especialista
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Cabeçalho Principal e Navegação -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-container container">
+      <!-- Logotipo -->
+      <a href="#" class="brand-logo" aria-label="TechHome Página Inicial">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">Tech<strong>Home</strong></span>
+          <span class="brand-tagline">Tecnologia & Atendimento Humano</span>
+        </div>
+      </a>
+
+      <!-- Barra de Pesquisa Global -->
+      <div class="header-search">
+        <form id="globalSearchForm" role="search">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="globalSearchInput" placeholder="Buscar fones, smartwatches, teclados, iluminação..." autocomplete="off">
+          <button type="button" id="clearSearchBtn" class="clear-search-btn" aria-label="Limpar busca" style="display: none;">&times;</button>
+        </form>
+      </div>
+
+      <!-- Controles de Ação do Cabeçalho -->
+      <div class="header-actions">
+        <!-- Botão de Ajuda ao Vivo no Cabeçalho -->
+        <button class="nav-btn support-nav-btn" id="headerSupportBtn" title="Chat de Atendimento ao Vivo">
+          <div class="support-avatar-stack">
+            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&auto=format&fit=crop&q=80" alt="Sarah Miller Atendente" class="agent-thumb">
+            <span class="status-indicator-badge"></span>
+          </div>
+          <div class="support-btn-info">
+            <span class="support-btn-label">Ajuda ao Vivo</span>
+            <span class="support-btn-status">Sarah & Equipe</span>
+          </div>
+        </button>
+
+        <!-- Alternador de Tema Escuro / Claro -->
+        <button class="nav-icon-btn" id="themeToggleBtn" aria-label="Alternar modo escuro e claro" title="Alternar Tema">
+          <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+
+        <!-- Lista de Desejos / Favoritos -->
+        <button class="nav-icon-btn" id="wishlistToggleBtn" aria-label="Ver Lista de Desejos" title="Lista de Desejos">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          <span class="counter-badge" id="wishlistCount">0</span>
+        </button>
+
+        <!-- Carrinho de Compras -->
+        <button class="nav-icon-btn cart-btn-pill" id="cartToggleBtn" aria-label="Ver Carrinho de Compras" title="Carrinho">
+          <div class="cart-icon-wrapper">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            <span class="counter-badge" id="cartCount">0</span>
+          </div>
+          <span class="cart-total-preview" id="cartTotalHeader">R$ 0,00</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Seção Hero Principal -->
+  <section class="hero-section" id="heroSection">
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    <div class="hero-container container">
+      <div class="hero-content">
+        <div class="hero-tag">
+          <span class="sparkle-icon">✨</span> Tecnologia de Ponta com Atendimento Humano
+        </div>
+        <h1 class="hero-title">O Futuro dos Gadgets com <span>Suporte Humano ao Vivo</span></h1>
+        <p class="hero-description">
+          Compre produtos de alta tecnologia com o respaldo do nosso time de especialistas 24/7. Tem dúvidas sobre compatibilidade ou prazo de entrega? Converse com nossa equipe antes ou após sua compra.
+        </p>
+        <div class="hero-actions">
+          <a href="#catalogSection" class="btn btn-primary btn-lg">
+            <span>Explorar Coleção</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+          <button class="btn btn-glass btn-lg" id="heroSupportTriggerBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Pedir Ajuda no Chat</span>
+          </button>
+        </div>
+        
+        <!-- Selos de Confiança -->
+        <div class="hero-trust-grid">
+          <div class="trust-item">
+            <div class="trust-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <div class="trust-text">
+              <strong>Garantia de 2 Anos</strong>
+              <span>Substituição expressa</span>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+            </div>
+            <div class="trust-text">
+              <strong>Suporte 24/7</strong>
+              <span>Atendentes humanos reais</span>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+            </div>
+            <div class="trust-text">
+              <strong>Frete Grátis</strong>
+              <span>Em pedidos acima de R$ 250</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Visual em Destaque no Hero -->
+      <div class="hero-visual">
+        <div class="featured-hero-card">
+          <div class="floating-support-bubble">
+            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&auto=format&fit=crop&q=80" alt="Sarah Miller">
+            <div>
+              <p class="bubble-name">Sarah Miller <span class="verified-tag">✓ Especialista</span></p>
+              <p class="bubble-msg">"Procurando o melhor fone com cancelamento de ruído? Posso te recomendar nosso campeão!"</p>
+            </div>
+          </div>
+          
+          <div class="hero-product-preview">
+            <span class="hero-badge">⭐ Mais Vendido de 2026</span>
+            <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80" alt="Headphone Aura Pro Sem Fio ANC" class="hero-product-img">
+            <div class="hero-product-info">
+              <div>
+                <h3>Headphone Aura Pro ANC</h3>
+                <div class="hero-rating">⭐⭐⭐⭐⭐ (4.9 / 5 • 342 avaliações)</div>
+              </div>
+              <div class="hero-product-price">
+                <span class="hero-original-price">R$ 1.749,00</span>
+                <span class="hero-current-price">R$ 1.399,00</span>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" id="heroQuickBuyBtn" data-product-id="1">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+              Adicionar ao Carrinho
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seção do Catálogo de Produtos e Filtros -->
+  <main class="catalog-section" id="catalogSection">
+    <div class="container">
+      
+      <!-- Cabeçalho da Seção -->
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Explore Nossos Produtos</h2>
+          <p class="section-subtitle">Dispositivos testados e homologados pelos nossos especialistas de suporte.</p>
+        </div>
+        
+        <!-- Faixa de Chamada para o Suporte -->
+        <div class="live-support-callout" id="calloutSupportBtn">
+          <div class="support-avatars-cluster">
+            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&auto=format&fit=crop&q=80" alt="Sarah">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=60&auto=format&fit=crop&q=80" alt="Alex">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&auto=format&fit=crop&q=80" alt="David">
+          </div>
+          <div class="callout-text">
+            <span>Precisa de ajuda antes de comprar?</span>
+            <strong>Fale com nossos especialistas ao vivo &rarr;</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pílulas de Categorias -->
+      <div class="categories-nav" role="tablist" aria-label="Categorias de Produtos">
+        <button class="cat-pill active" data-category="all">
+          <span class="cat-icon">⚡</span> Todos os Produtos
+        </button>
+        <button class="cat-pill" data-category="audio">
+          <span class="cat-icon">🎧</span> Áudio & Som
+        </button>
+        <button class="cat-pill" data-category="wearables">
+          <span class="cat-icon">⌚</span> Smartwatches & Wearables
+        </button>
+        <button class="cat-pill" data-category="gaming">
+          <span class="cat-icon">🎮</span> Games & Periféricos
+        </button>
+        <button class="cat-pill" data-category="smarthome">
+          <span class="cat-icon">🏠</span> Casa Inteligente
+        </button>
+        <button class="cat-pill" data-category="accessories">
+          <span class="cat-icon">🔌</span> Acessórios & Energia
+        </button>
+      </div>
+
+      <!-- Barra de Filtros e Ordenação -->
+      <div class="filter-toolbar">
+        <div class="toolbar-left">
+          <div class="filter-group">
+            <label for="sortSelect">Ordenar por:</label>
+            <select id="sortSelect" class="form-select">
+              <option value="featured">Destaques & Melhores Avaliados</option>
+              <option value="price-low">Menor Preço</option>
+              <option value="price-high">Maior Preço</option>
+              <option value="rating">Melhor Avaliação dos Clientes</option>
+              <option value="discount">Maior Desconto</option>
+            </select>
+          </div>
+
+          <div class="filter-group price-filter-group">
+            <label for="priceMaxRange">Preço Máx: <strong id="priceRangeValue">R$ 5.000</strong></label>
+            <input type="range" id="priceMaxRange" min="100" max="5000" step="50" value="5000" class="range-slider">
+          </div>
+
+          <label class="checkbox-label">
+            <input type="checkbox" id="inStockCheckbox">
+            <span>Apenas em Estoque</span>
+          </label>
+        </div>
+
+        <div class="toolbar-right">
+          <span class="results-count" id="resultsCount">Exibindo 10 produtos</span>
+        </div>
+      </div>
+
+      <!-- Barra de Tags de Filtros Ativos -->
+      <div class="active-filters-bar" id="activeFiltersBar" style="display: none;">
+        <span class="filter-tag-label">Filtros ativos:</span>
+        <div class="filter-tags-container" id="filterTagsContainer"></div>
+        <button class="btn-clear-all" id="clearAllFiltersBtn">Limpar Todos</button>
+      </div>
+
+      <!-- Grade de Produtos -->
+      <div class="products-grid" id="productsGrid">
+        <!-- Renderizado dinamicamente via JS -->
+      </div>
+
+      <!-- Estado Vazio / Nenhum produto encontrado -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-icon">🔍</div>
+        <h3>Nenhum produto encontrado</h3>
+        <p>Tente ajustar os critérios de pesquisa ou o filtro de preço, ou peça uma recomendação ao nosso suporte.</p>
+        <button class="btn btn-primary" id="resetFiltersEmptyBtn">Redefinir Filtros</button>
+        <button class="btn btn-glass" id="askSupportEmptyBtn">Pedir Ajuda no Chat</button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Banner de Destaque do Suporte Humano -->
+  <section class="support-feature-banner">
+    <div class="container">
+      <div class="support-banner-card">
+        <div class="banner-grid">
+          <div class="banner-info">
+            <span class="banner-badge">🤝 Atendimento Feito por Pessoas</span>
+            <h2>Tem Dúvidas Sobre um Pedido ou Compatibilidade?</h2>
+            <p>
+              Diferente de robôs automáticos genéricos, na TechHome você fala com especialistas treinados prontos para resolver dúvidas técnicas, rastrear encomendas, realizar trocas e liberar descontos especiais.
+            </p>
+            <div class="agent-profiles-row">
+              <div class="agent-chip">
+                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&auto=format&fit=crop&q=80" alt="Sarah Miller">
+                <div>
+                  <strong>Sarah Miller</strong>
+                  <span>Sucesso do Cliente</span>
+                </div>
+              </div>
+              <div class="agent-chip">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&auto=format&fit=crop&q=80" alt="Alex Rivera">
+                <div>
+                  <strong>Alex Rivera</strong>
+                  <span>Especialista em Áudio & Games</span>
+                </div>
+              </div>
+              <div class="agent-chip">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&auto=format&fit=crop&q=80" alt="David Chen">
+                <div>
+                  <strong>David Chen</strong>
+                  <span>Logística & Devoluções</span>
+                </div>
+              </div>
+            </div>
+            <div class="banner-btn-group">
+              <button class="btn btn-primary btn-lg" id="bannerOpenChatBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span>Iniciar Chat com Atendente</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="banner-stats-box">
+            <div class="stat-card">
+              <span class="stat-num">&lt; 45s</span>
+              <span class="stat-lbl">Tempo Médio de Resposta</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num">99.4%</span>
+              <span class="stat-lbl">Satisfação dos Clientes</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num">30 Dias</span>
+              <span class="stat-lbl">Garantia de Devolução Sem Complicações</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num">100%</span>
+              <span class="stat-lbl">Produtos Originais com Nota Fiscal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Depoimentos e Avaliações de Clientes -->
+  <section class="testimonials-section">
+    <div class="container">
+      <div class="section-header text-center">
+        <h2 class="section-title">O Que Nossos Clientes Dizem</h2>
+        <p class="section-subtitle">Opiniões de pessoas reais que compraram e foram atendidas por nossa equipe.</p>
+      </div>
+
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="testi-stars">⭐⭐⭐⭐⭐</div>
+          <p class="testi-text">"A Sarah no chat me ajudou a comparar três modelos de fones em menos de 2 minutos. A entrega chegou no dia seguinte e o produto superou minhas expectativas!"</p>
+          <div class="testi-user">
+            <div class="testi-avatar">EM</div>
+            <div>
+              <strong>Elena Martinez</strong>
+              <span>Compradora Verificada • Headphone Aura Pro</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testi-stars">⭐⭐⭐⭐⭐</div>
+          <p class="testi-text">"Precisei alterar meu endereço de entrega logo após fazer o pedido. Falei com o David no suporte e ele atualizou a transportadora instantaneamente. Atendimento nota 10!"</p>
+          <div class="testi-user">
+            <div class="testi-avatar">JL</div>
+            <div>
+              <strong>Julio Lucas</strong>
+              <span>Comprador Verificado • Luminária CyberDesk</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="testi-stars">⭐⭐⭐⭐⭐</div>
+          <p class="testi-text">"Melhor experiência de compra online do ano. O cupom de 20% funcionou perfeitamente e o rastreamento foi impecável. Com certeza comprarei mais vezes!"</p>
+          <div class="testi-user">
+            <div class="testi-avatar">SK</div>
+            <div>
+              <strong>Sofia Silva</strong>
+              <span>Compradora Verificada • Smartwatch ChronoMax</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rodapé -->
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-col brand-col">
+        <a href="#" class="brand-logo">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          </div>
+          <span class="brand-name">Tech<strong>Home</strong></span>
+        </a>
+        <p class="footer-desc">Dispositivos premium de áudio, wearables, games e automação residencial com atendimento humano 24/7.</p>
+        <div class="support-status-pill">
+          <span class="pulse-dot"></span> Suporte ao Vivo Ativo 24/7
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Categorias</h4>
+        <ul class="footer-links">
+          <li><a href="#catalogSection" data-category="audio">Áudio & Som</a></li>
+          <li><a href="#catalogSection" data-category="wearables">Smartwatches</a></li>
+          <li><a href="#catalogSection" data-category="gaming">Games & Periféricos</a></li>
+          <li><a href="#catalogSection" data-category="smarthome">Casa Inteligente</a></li>
+          <li><a href="#catalogSection" data-category="accessories">Acessórios & Carregadores</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Ajuda & Atendimento</h4>
+        <ul class="footer-links">
+          <li><button class="footer-btn-link" id="footerChatBtn">Conversar com Suporte</button></li>
+          <li><button class="footer-btn-link" id="footerTrackBtn">Rastrear Meu Pedido</button></li>
+          <li><button class="footer-btn-link" id="footerReturnsBtn">Política de Trocas & Garantia</button></li>
+          <li><button class="footer-btn-link" id="footerPromoBtn">Cupons & Promoções</button></li>
+        </ul>
+      </div>
+
+      <div class="footer-col newsletter-col">
+        <h4>Receba Novidades & 15% OFF</h4>
+        <p>Cadastre seu e-mail para receber ofertas exclusivas e lançamentos VIP.</p>
+        <form class="newsletter-form" id="newsletterForm">
+          <input type="email" placeholder="Seu melhor e-mail" required class="newsletter-input">
+          <button type="submit" class="btn btn-primary">Cadastrar</button>
+        </form>
+        <div class="payment-icons">
+          <span class="pay-chip">🔒 256-bit SSL Seguro</span>
+          <span class="pay-chip">Pix</span>
+          <span class="pay-chip">Cartão de Crédito</span>
+          <span class="pay-chip">Boleto</span>
+          <span class="pay-chip">Apple Pay</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom container">
+      <p>&copy; 2026 TechHome Brasil. Todos os direitos reservados. Desenvolvido com HTML, CSS e JavaScript nativos.</p>
+      <div class="footer-bottom-links">
+        <a href="#">Política de Privacidade</a>
+        <a href="#">Termos de Uso</a>
+        <a href="#">Segurança</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================================== -->
+  <!-- GAVETA LATERAL DO CARRINHO                     -->
+  <!-- ============================================== -->
+  <div class="drawer-overlay" id="cartOverlay" aria-hidden="true"></div>
+  <aside class="side-drawer" id="cartDrawer" aria-label="Carrinho de Compras" aria-hidden="true">
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        <h3>Seu Carrinho (<span id="cartDrawerCount">0</span>)</h3>
+      </div>
+      <button class="drawer-close-btn" id="closeCartBtn" aria-label="Fechar carrinho">&times;</button>
+    </div>
+
+    <!-- Barra de Progresso do Frete Grátis -->
+    <div class="shipping-progress-container" id="shippingProgressContainer">
+      <div class="shipping-progress-text" id="shippingProgressText">
+        Adicione mais <strong>R$ 250,00</strong> para ganhar <strong>FRETE GRÁTIS EXPRESSO</strong>!
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="shippingProgressBar" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Lista de Itens do Carrinho -->
+    <div class="drawer-body" id="cartItemsList">
+      <!-- Injetado dinamicamente via JS -->
+    </div>
+
+    <!-- Resumo de Valores e Checkout -->
+    <div class="drawer-footer" id="cartDrawerFooter">
+      <!-- Caixa de Cupom de Desconto -->
+      <div class="promo-code-box">
+        <div class="promo-input-wrap">
+          <input type="text" id="promoCodeInput" placeholder="Cupom (ex: DESCONTO20)" uppercase>
+          <button type="button" id="applyPromoBtn" class="btn btn-secondary btn-sm">Aplicar</button>
+        </div>
+        <div class="promo-message" id="promoMessage"></div>
+      </div>
+
+      <!-- Resumo Financeiro -->
+      <div class="price-breakdown">
+        <div class="price-row">
+          <span>Subtotal</span>
+          <span id="cartSubtotal">R$ 0,00</span>
+        </div>
+        <div class="price-row discount-row" id="discountRow" style="display: none;">
+          <span>Desconto Aplicado (<strong id="appliedPromoTag"></strong>)</span>
+          <span id="cartDiscount">-R$ 0,00</span>
+        </div>
+        <div class="price-row">
+          <span>Frete Estimado</span>
+          <span id="cartShipping">R$ 29,90</span>
+        </div>
+        <div class="price-row">
+          <span>Impostos Inclusos</span>
+          <span id="cartTax">R$ 0,00</span>
+        </div>
+        <div class="price-row total-row">
+          <span>Total</span>
+          <span id="cartTotal">R$ 0,00</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-block btn-lg" id="proceedToCheckoutBtn">
+        <span>Finalizar Compra</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </button>
+
+      <button class="btn btn-glass btn-block btn-sm" id="cartNeedHelpBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Dúvidas sobre os itens do carrinho? Pergunte no Chat
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============================================== -->
+  <!-- GAVETA LATERAL DA LISTA DE DESEJOS             -->
+  <!-- ============================================== -->
+  <aside class="side-drawer" id="wishlistDrawer" aria-label="Lista de Desejos" aria-hidden="true">
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        <h3>Meus Favoritos (<span id="wishlistDrawerCount">0</span>)</h3>
+      </div>
+      <button class="drawer-close-btn" id="closeWishlistBtn" aria-label="Fechar lista de desejos">&times;</button>
+    </div>
+
+    <div class="drawer-body" id="wishlistItemsList">
+      <!-- Injetado dinamicamente via JS -->
+    </div>
+  </aside>
+
+  <!-- ============================================== -->
+  <!-- MODAL DE VISUALIZAÇÃO RÁPIDA (QUICK VIEW)      -->
+  <!-- ============================================== -->
+  <div class="modal-backdrop" id="quickViewModal" aria-hidden="true">
+    <div class="modal-card quick-view-card" role="dialog" aria-modal="true">
+      <button class="modal-close-btn" id="closeQuickViewBtn" aria-label="Fechar modal">&times;</button>
+      <div class="quick-view-grid" id="quickViewContent">
+        <!-- Renderizado dinamicamente -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL DE CHECKOUT SEGURO                       -->
+  <!-- ============================================== -->
+  <div class="modal-backdrop" id="checkoutModal" aria-hidden="true">
+    <div class="modal-card checkout-card" role="dialog" aria-modal="true">
+      <button class="modal-close-btn" id="closeCheckoutBtn" aria-label="Fechar checkout">&times;</button>
+      
+      <div class="checkout-header">
+        <h2>Checkout Seguro</h2>
+        <div class="checkout-secure-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Criptografia 256-Bit SSL
+        </div>
+      </div>
+
+      <form id="checkoutForm" class="checkout-form">
+        <div class="checkout-body-grid">
+          <!-- Coluna Esquerda: Dados de Entrega e Pagamento -->
+          <div class="checkout-left">
+            <h4 class="form-section-title">1. Dados de Entrega</h4>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label for="checkFirstName">Nome *</label>
+                <input type="text" id="checkFirstName" required placeholder="Lucas">
+              </div>
+              <div class="form-group">
+                <label for="checkLastName">Sobrenome *</label>
+                <input type="text" id="checkLastName" required placeholder="Oliveira">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="checkEmail">E-mail (para envio do rastreamento) *</label>
+              <input type="email" id="checkEmail" required placeholder="lucas.oliveira@email.com">
+            </div>
+
+            <div class="form-group">
+              <label for="checkAddress">Endereço Completo com Número *</label>
+              <input type="text" id="checkAddress" required placeholder="Av. Paulista, 1578, Apto 42">
+            </div>
+
+            <div class="form-row-3">
+              <div class="form-group">
+                <label for="checkCity">Cidade *</label>
+                <input type="text" id="checkCity" required placeholder="São Paulo">
+              </div>
+              <div class="form-group">
+                <label for="checkState">Estado (UF) *</label>
+                <input type="text" id="checkState" required placeholder="SP">
+              </div>
+              <div class="form-group">
+                <label for="checkZip">CEP *</label>
+                <input type="text" id="checkZip" required placeholder="01310-200">
+              </div>
+            </div>
+
+            <h4 class="form-section-title" style="margin-top: 1.5rem;">2. Forma de Pagamento</h4>
+            <div class="payment-tabs">
+              <label class="pay-tab active">
+                <input type="radio" name="paymentType" value="card" checked>
+                <span>💳 Cartão de Crédito</span>
+              </label>
+              <label class="pay-tab">
+                <input type="radio" name="paymentType" value="pix">
+                <span>⚡ Pix Instantâneo</span>
+              </label>
+              <label class="pay-tab">
+                <input type="radio" name="paymentType" value="boleto">
+                <span>📄 Boleto Bancário</span>
+              </label>
+            </div>
+
+            <div id="cardFields" class="card-fields">
+              <div class="form-group">
+                <label for="cardNumber">Número do Cartão *</label>
+                <input type="text" id="cardNumber" placeholder="4532 •••• •••• 8892" maxlength="19" required>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="cardExpiry">Validade (MM/AA) *</label>
+                  <input type="text" id="cardExpiry" placeholder="12/28" maxlength="5" required>
+                </div>
+                <div class="form-group">
+                  <label for="cardCvc">CVV / CVC *</label>
+                  <input type="password" id="cardCvc" placeholder="•••" maxlength="4" required>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coluna Direita: Resumo do Pedido -->
+          <div class="checkout-right">
+            <h4 class="form-section-title">Resumo do Pedido</h4>
+            <div class="checkout-items-preview" id="checkoutItemsPreview">
+              <!-- Renderizado dinamicamente -->
+            </div>
+
+            <div class="checkout-totals">
+              <div class="price-row">
+                <span>Subtotal dos Produtos:</span>
+                <span id="checkoutSubtotal">R$ 0,00</span>
+              </div>
+              <div class="price-row discount-row" id="checkoutDiscountRow" style="display: none;">
+                <span>Desconto do Cupom:</span>
+                <span id="checkoutDiscount">-R$ 0,00</span>
+              </div>
+              <div class="price-row">
+                <span>Frete:</span>
+                <span id="checkoutShipping">R$ 0,00</span>
+              </div>
+              <div class="price-row">
+                <span>Impostos:</span>
+                <span id="checkoutTax">R$ 0,00</span>
+              </div>
+              <div class="price-row total-row">
+                <span>Total Final:</span>
+                <span id="checkoutGrandTotal">R$ 0,00</span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitOrderBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>Pagar & Confirmar Pedido</span>
+            </button>
+
+            <p class="checkout-guarantee">
+              🔒 Garantia de 30 Dias • Código de rastreio enviado em instantes
+            </p>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL DE CONFIRMAÇÃO DE PEDIDO COM SUCESSO     -->
+  <!-- ============================================== -->
+  <div class="modal-backdrop" id="orderSuccessModal" aria-hidden="true">
+    <div class="modal-card order-success-card" role="dialog" aria-modal="true">
+      <div class="success-icon-wrap">
+        <svg class="checkmark-svg" viewBox="0 0 52 52">
+          <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+          <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+      </div>
+
+      <h2>Obrigado pelo seu Pedido!</h2>
+      <p class="success-msg">Seu pagamento foi confirmado com sucesso e seu pedido já está sendo preparado pelo nosso centro de distribuição.</p>
+      
+      <div class="order-id-badge">
+        <span>Código de Rastreamento:</span>
+        <strong id="confirmedOrderId">ORD-89241</strong>
+        <button class="btn-copy-id" id="copyOrderIdBtn" title="Copiar Código">📋 Copiar</button>
+      </div>
+
+      <div class="order-confirmation-details" id="orderConfirmationDetails">
+        <!-- Renderizado dinamicamente -->
+      </div>
+
+      <div class="confirmation-actions">
+        <button class="btn btn-primary" id="trackInChatBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Acompanhar este Pedido no Chat com Suporte
+        </button>
+        <button class="btn btn-glass" id="continueShoppingBtn">Continuar Comprando</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- WIDGET FLUTUANTE DE CHAT DE SUPORTE AO CLIENTE -->
+  <!-- ============================================== -->
+  <div class="live-chat-widget-wrapper" id="liveChatWidget">
+    
+    <!-- Botão Flutuante de Disparo -->
+    <button class="chat-launcher-btn" id="chatLauncherBtn" aria-label="Abrir Chat de Suporte ao Vivo">
+      <div class="launcher-avatar-container">
+        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80" alt="Sarah Miller Atendente" class="launcher-avatar-img">
+        <span class="launcher-status-dot"></span>
+      </div>
+      <div class="launcher-label">
+        <span class="launcher-title">Precisa de Ajuda?</span>
+        <span class="launcher-sub">Falar com a Sarah</span>
+      </div>
+      <div class="chat-unread-badge" id="chatUnreadBadge">1</div>
+    </button>
+
+    <!-- Janela do Chat -->
+    <div class="chat-window-card" id="chatWindowCard" aria-hidden="true">
+      
+      <!-- Cabeçalho do Chat -->
+      <div class="chat-header">
+        <div class="agent-profile-header">
+          <div class="agent-avatar-wrap">
+            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80" alt="Especialista de Atendimento" id="chatAgentAvatar">
+            <span class="agent-live-dot"></span>
+          </div>
+          <div class="agent-meta">
+            <div class="agent-name-row">
+              <strong id="chatAgentName">Sarah Miller</strong>
+              <span class="agent-badge-pill" id="chatAgentRole">Sucesso do Cliente</span>
+            </div>
+            <div class="agent-status-text">
+              <span class="status-pulse-dot"></span>
+              <span id="chatAgentStatus">Online • Responde em ~30 segundos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controles do Cabeçalho do Chat -->
+        <div class="chat-header-actions">
+          <!-- Menu de Troca de Atendente -->
+          <div class="dropdown-wrapper">
+            <button class="chat-icon-ctrl" id="switchAgentDropdownBtn" title="Trocar de Especialista" aria-label="Trocar de Especialista">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </button>
+            <div class="agent-select-menu" id="agentSelectMenu" style="display: none;">
+              <p class="menu-label">Falar com outro especialista:</p>
+              <button class="agent-select-opt active" data-agent="sarah">
+                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&auto=format&fit=crop&q=80" alt="Sarah">
+                <div>
+                  <strong>Sarah Miller</strong>
+                  <span>Atendimento & Descontos</span>
+                </div>
+              </button>
+              <button class="agent-select-opt" data-agent="alex">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=60&auto=format&fit=crop&q=80" alt="Alex">
+                <div>
+                  <strong>Alex Rivera</strong>
+                  <span>Áudio & Hardware Gamer</span>
+                </div>
+              </button>
+              <button class="agent-select-opt" data-agent="david">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&auto=format&fit=crop&q=80" alt="David">
+                <div>
+                  <strong>David Chen</strong>
+                  <span>Entregas & Devoluções</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Alternador de Som -->
+          <button class="chat-icon-ctrl" id="toggleSoundBtn" title="Ativar/Desativar som de notificações" aria-label="Alternar Som">
+            <svg class="sound-on-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+            <svg class="sound-off-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+          </button>
+
+          <!-- Botão para Criar Protocolo de Atendimento -->
+          <button class="chat-icon-ctrl" id="createTicketBtn" title="Gerar Protocolo de Atendimento" aria-label="Gerar Protocolo">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </button>
+
+          <!-- Botão de Fechar Chat -->
+          <button class="chat-icon-ctrl" id="closeChatWindowBtn" aria-label="Fechar Janela de Chat">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Abas de Atendentes (Salas de Conversa Separadas e Independentes) -->
+      <div class="chat-agent-tabs-bar" id="chatAgentTabsBar">
+        <button class="agent-tab-btn active" data-agent="sarah" title="Conversar com Sarah Miller (Atendimento & Vendas)">
+          <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&auto=format&fit=crop&q=80" alt="Sarah">
+          <div class="agent-tab-info">
+            <strong>Sarah Miller</strong>
+            <span>Vendas & Cupons</span>
+          </div>
+          <span class="tab-unread-dot" id="sarahUnreadDot" style="display:none;"></span>
+        </button>
+        <button class="agent-tab-btn" data-agent="alex" title="Conversar com Alex Rivera (Áudio & Hardware Gamer)">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=60&auto=format&fit=crop&q=80" alt="Alex">
+          <div class="agent-tab-info">
+            <strong>Alex Rivera</strong>
+            <span>Áudio & Games</span>
+          </div>
+          <span class="tab-unread-dot" id="alexUnreadDot" style="display:none;"></span>
+        </button>
+        <button class="agent-tab-btn" data-agent="david" title="Conversar com David Chen (Logística & Devoluções)">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&auto=format&fit=crop&q=80" alt="David">
+          <div class="agent-tab-info">
+            <strong>David Chen</strong>
+            <span>Logística & Trocas</span>
+          </div>
+          <span class="tab-unread-dot" id="davidUnreadDot" style="display:none;"></span>
+        </button>
+      </div>
+
+      <!-- Barra de Chips de Ações Rápidas -->
+      <div class="chat-quick-actions-bar" id="chatQuickActions">
+        <button class="quick-chip" data-action="track_order">📦 Rastrear Pedido</button>
+        <button class="quick-chip" data-action="discount_code">🏷️ Cupom de Desconto</button>
+        <button class="quick-chip" data-action="returns_help">💳 Trocas & Devoluções</button>
+        <button class="quick-chip" data-action="recommend_audio">🎧 Melhores Fones</button>
+        <button class="quick-chip" data-action="warranty_info">🛡️ Como Funciona a Garantia</button>
+        <button class="quick-chip" data-action="human_agent">🙋 Abrir Protocolo VIP</button>
+      </div>
+
+      <!-- Fluxo de Mensagens em Tempo Real -->
+      <div class="chat-messages-container" id="chatMessagesStream" role="log" aria-live="polite">
+        <!-- Renderizado dinamicamente -->
+      </div>
+
+      <!-- Indicador de Digitação -->
+      <div class="typing-indicator-row" id="typingIndicator" style="display: none;">
+        <div class="typing-avatar">
+          <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=60&auto=format&fit=crop&q=80" alt="Atendente" id="typingAgentAvatar">
+        </div>
+        <div class="typing-bubble">
+          <span class="typing-agent-name" id="typingAgentLabel">Sarah está digitando</span>
+          <div class="typing-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Avaliação de Atendimento -->
+      <div class="chat-feedback-prompt" id="chatFeedbackPrompt" style="display: none;">
+        <p>Este atendimento foi útil para você?</p>
+        <div class="star-rating-buttons">
+          <button class="star-btn" data-rating="1">⭐</button>
+          <button class="star-btn" data-rating="2">⭐⭐</button>
+          <button class="star-btn" data-rating="3">⭐⭐⭐</button>
+          <button class="star-btn" data-rating="4">⭐⭐⭐⭐</button>
+          <button class="star-btn" data-rating="5">⭐⭐⭐⭐⭐</button>
+        </div>
+      </div>
+
+      <!-- Área de Entrada de Mensagem -->
+      <div class="chat-input-area">
+        <!-- Card de Produto Anexado -->
+        <div class="chat-attached-product" id="chatAttachedProduct" style="display: none;">
+          <div class="attached-img-wrap">
+            <img src="" alt="Produto anexado" id="attachedProductImg">
+          </div>
+          <div class="attached-details">
+            <span class="attached-label">Dúvida sobre o produto:</span>
+            <strong id="attachedProductTitle">Título do Produto</strong>
+            <span id="attachedProductPrice">R$ 0,00</span>
+          </div>
+          <button class="btn-remove-attachment" id="removeAttachedProductBtn" title="Remover anexo">&times;</button>
+        </div>
+
+        <form id="chatMessageForm" class="chat-form">
+          <div class="input-controls-wrap">
+            <button type="button" class="btn-chat-tool" id="chatEmojiBtn" title="Inserir emoji" aria-label="Inserir emoji">😊</button>
+            <input type="text" id="chatTextInput" placeholder="Digite sua dúvida ou mensagem..." autocomplete="off" required>
+            <button type="submit" class="btn-chat-send" id="chatSendBtn" aria-label="Enviar mensagem">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+          </div>
+        </form>
+
+        <div class="chat-footer-caption">
+          <span>🔒 Atendimento humano seguro com criptografia de ponta a ponta</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Contêiner de Notificações Toast -->
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Código JavaScript da Aplicação -->
+  <script src="script.js"></script>
+</body>
+</html>
