@@ -573,6 +573,7 @@ function initApp() {
   updateWishlistUI();
   initSupportChat();
   initGeminiIntegration();
+  initDraggableChatLauncher();
   attachEventListeners();
 }
 
@@ -1350,6 +1351,7 @@ function openSupportChat() {
   DOM.chatWindowCard.setAttribute("aria-hidden", "false");
   AppState.unreadCount = 0;
   DOM.chatUnreadBadge.style.display = "none";
+  updateChatWindowPosition();
   DOM.chatTextInput.focus();
   scrollChatToBottom();
 }
@@ -1813,7 +1815,206 @@ function closeGeminiSettings() {
 }
 
 // ==========================================================================
-// 14.3 PROCESSAMENTO DE RESPOSTA DO ATENDENTE (GEMINI + FALLBACK LOCAL)
+// 14.3 POSICIONAMENTO DINÂMICO DA JANELA DO CHAT
+// ==========================================================================
+function updateChatWindowPosition() {
+  if (window.innerWidth <= 768) {
+    DOM.chatWindowCard.style.left = "";
+    DOM.chatWindowCard.style.top = "";
+    DOM.chatWindowCard.style.right = "";
+    DOM.chatWindowCard.style.bottom = "";
+    return;
+  }
+
+  // Se o botão não tem posicionamento customizado, mantém o padrão CSS
+  if (!DOM.chatLauncherBtn.style.left || DOM.chatLauncherBtn.style.left === "auto") {
+    DOM.chatWindowCard.style.left = "";
+    DOM.chatWindowCard.style.top = "";
+    DOM.chatWindowCard.style.right = "24px";
+    DOM.chatWindowCard.style.bottom = "90px";
+    return;
+  }
+
+  const btnRect = DOM.chatLauncherBtn.getBoundingClientRect();
+  const cardWidth = 410;
+  const cardHeight = Math.min(610, window.innerHeight - 100);
+  const margin = 16;
+
+  // Alinhamento Horizontal relativo ao botão
+  let targetLeft;
+  if (btnRect.left + cardWidth <= window.innerWidth - margin) {
+    targetLeft = btnRect.left;
+  } else {
+    targetLeft = btnRect.right - cardWidth;
+  }
+  targetLeft = Math.max(margin, Math.min(targetLeft, window.innerWidth - cardWidth - margin));
+
+  // Alinhamento Vertical relativo ao botão
+  let targetTop;
+  const spaceAbove = btnRect.top - margin;
+  const spaceBelow = window.innerHeight - btnRect.bottom - margin;
+
+  if (spaceAbove >= cardHeight || spaceAbove >= spaceBelow) {
+    targetTop = btnRect.top - cardHeight - 12;
+  } else {
+    targetTop = btnRect.bottom + 12;
+  }
+  targetTop = Math.max(margin, Math.min(targetTop, window.innerHeight - cardHeight - margin));
+
+  DOM.chatWindowCard.style.left = `${targetLeft}px`;
+  DOM.chatWindowCard.style.top = `${targetTop}px`;
+  DOM.chatWindowCard.style.right = "auto";
+  DOM.chatWindowCard.style.bottom = "auto";
+}
+
+// ==========================================================================
+// 14.4 MOTOR DE ARRASTO (DRAG & DROP) DO BOTÃO FLUTUANTE
+// ==========================================================================
+function initDraggableChatLauncher() {
+  const btn = DOM.chatLauncherBtn;
+  if (!btn) return;
+
+  let isDragging = false;
+  let hasMoved = false;
+  let startX = 0;
+  let startY = 0;
+  let initialLeft = 0;
+  let initialTop = 0;
+  let preventClick = false;
+
+  // Restaura posição salva no localStorage (se houver)
+  try {
+    const saved = JSON.parse(localStorage.getItem("techhome_launcher_pos") || "null");
+    if (saved && typeof saved.left === "number" && typeof saved.top === "number") {
+      const btnWidth = btn.offsetWidth || 180;
+      const btnHeight = btn.offsetHeight || 56;
+      const clampedLeft = Math.max(12, Math.min(saved.left, window.innerWidth - btnWidth - 12));
+      const clampedTop = Math.max(12, Math.min(saved.top, window.innerHeight - btnHeight - 12));
+      btn.style.left = `${clampedLeft}px`;
+      btn.style.top = `${clampedTop}px`;
+      btn.style.right = "auto";
+      btn.style.bottom = "auto";
+    }
+  } catch (_) { }
+
+  // Início do evento de arrasto (Pointer Down)
+  btn.addEventListener("pointerdown", (e) => {
+    // Apenas botão esquerdo ou toque
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+
+    const rect = btn.getBoundingClientRect();
+    startX = e.clientX;
+    startY = e.clientY;
+    initialLeft = rect.left;
+    initialTop = rect.top;
+    isDragging = true;
+    hasMoved = false;
+
+    try {
+      btn.setPointerCapture(e.pointerId);
+    } catch (_) { }
+  });
+
+  // Movimento de arrasto (Pointer Move)
+  btn.addEventListener("pointermove", (e) => {
+    if (!isDragging) return;
+
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+
+    // Só ativa arrasto se o usuário realmente arrastou mais de 5 pixels
+    if (!hasMoved && Math.hypot(dx, dy) > 5) {
+      hasMoved = true;
+      btn.classList.add("is-dragging");
+    }
+
+    if (hasMoved) {
+      const btnWidth = btn.offsetWidth;
+      const btnHeight = btn.offsetHeight;
+
+      const newLeft = initialLeft + dx;
+      const newTop = initialTop + dy;
+
+      const minX = 12;
+      const maxX = window.innerWidth - btnWidth - 12;
+      const minY = 12;
+      const maxY = window.innerHeight - btnHeight - 12;
+
+      const clampX = Math.max(minX, Math.min(newLeft, maxX));
+      const clampY = Math.max(minY, Math.min(newTop, maxY));
+
+      btn.style.left = `${clampX}px`;
+      btn.style.top = `${clampY}px`;
+      btn.style.right = "auto";
+      btn.style.bottom = "auto";
+
+      if (DOM.chatWindowCard.classList.contains("active")) {
+        updateChatWindowPosition();
+      }
+    }
+  });
+
+  // Fim do arrasto (Pointer Up / Cancel)
+  const handlePointerEnd = (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+
+    try {
+      btn.releasePointerCapture(e.pointerId);
+    } catch (_) { }
+
+    if (hasMoved) {
+      btn.classList.remove("is-dragging");
+      preventClick = true;
+
+      const rect = btn.getBoundingClientRect();
+      try {
+        localStorage.setItem("techhome_launcher_pos", JSON.stringify({
+          left: Math.round(rect.left),
+          top: Math.round(rect.top)
+        }));
+      } catch (_) { }
+
+      if (DOM.chatWindowCard.classList.contains("active")) {
+        updateChatWindowPosition();
+      }
+
+      // Pequeno timeout para evitar que o clique abra/feche o chat logo após o drop
+      setTimeout(() => {
+        preventClick = false;
+        hasMoved = false;
+      }, 150);
+    }
+  };
+
+  btn.addEventListener("pointerup", handlePointerEnd);
+  btn.addEventListener("pointercancel", handlePointerEnd);
+
+  // Intercepta o evento de clique na fase de captura (se moveu, não abre o chat)
+  btn.addEventListener("click", (e) => {
+    if (preventClick || hasMoved) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  }, true);
+
+  // Mantém o botão dentro da tela ao redimensionar
+  window.addEventListener("resize", () => {
+    if (btn.style.left && btn.style.left !== "auto") {
+      const rect = btn.getBoundingClientRect();
+      const clampLeft = Math.max(12, Math.min(rect.left, window.innerWidth - rect.width - 12));
+      const clampTop = Math.max(12, Math.min(rect.top, window.innerHeight - rect.height - 12));
+      btn.style.left = `${clampLeft}px`;
+      btn.style.top = `${clampTop}px`;
+    }
+    if (DOM.chatWindowCard.classList.contains("active")) {
+      updateChatWindowPosition();
+    }
+  });
+}
+
+// ==========================================================================
+// 14.5 PROCESSAMENTO DE RESPOSTA DO ATENDENTE (GEMINI + FALLBACK LOCAL)
 // ==========================================================================
 async function processAgentResponse(userInput, attachedProduct, targetAgentId) {
   const agent = SUPPORT_AGENTS[targetAgentId];

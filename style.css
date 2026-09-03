@@ -2394,13 +2394,14 @@ img {
 }
 
 /* ==========================================================================
-   Widget Flutuante de Chat de Suporte Humano
+   Widget Flutuante de Chat de Suporte Humano (Arrastável / Drag & Drop)
    ========================================================================== */
 .live-chat-widget-wrapper {
   position: fixed;
   bottom: 24px;
   right: 24px;
   z-index: 300;
+  pointer-events: none;
 }
 
 .chat-launcher-btn {
@@ -2412,9 +2413,21 @@ img {
   border-radius: var(--radius-full);
   color: #ffffff;
   box-shadow: 0 8px 28px var(--primary-glow), 0 2px 8px rgba(0, 0, 0, 0.3);
-  position: relative;
-  transition: all var(--transition-bounce);
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 320;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  pointer-events: auto;
+  transition: transform var(--transition-bounce), box-shadow var(--transition-bounce), opacity var(--transition-fast);
   animation: launcher-pulse 3s infinite;
+}
+
+.chat-launcher-btn * {
+  pointer-events: none;
 }
 
 @keyframes launcher-pulse {
@@ -2431,6 +2444,21 @@ img {
 
 .chat-launcher-btn:hover {
   transform: scale(1.05) translateY(-3px);
+  box-shadow: 0 12px 32px var(--primary-glow), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.chat-launcher-btn:active {
+  cursor: grabbing;
+}
+
+.chat-launcher-btn.is-dragging {
+  cursor: grabbing !important;
+  transition: none !important;
+  animation: none !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 18px 40px var(--primary-glow), 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+  opacity: 0.95;
+  z-index: 350 !important;
 }
 
 .launcher-avatar-container {
@@ -2534,6 +2562,7 @@ img {
   transform-origin: bottom right;
   transition: all var(--transition-bounce);
   z-index: 310;
+  pointer-events: auto;
 }
 
 .chat-window-card.active {
