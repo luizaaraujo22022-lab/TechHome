@@ -268,20 +268,29 @@ const AppState = {
   appliedPromo: JSON.parse(localStorage.getItem("novamart_promo") || "null"),
   theme: localStorage.getItem("novamart_theme") || "dark",
   soundEnabled: JSON.parse(localStorage.getItem("novamart_sound") || "true"),
-  
+
   // Filtros do Catálogo
   currentCategory: "all",
   searchQuery: "",
   sortBy: "featured",
   maxPrice: 5000,
   inStockOnly: false,
-  
+
   // Estado do Chat e Salas Separadas por Especialista
   activeAgent: "sarah",
   attachedProduct: null,
   isAgentTyping: false,
   unreadCount: 0,
-  
+
+  // Configuração da Inteligência Artificial Google Gemini
+  gemini: {
+    apiKey: localStorage.getItem("techhome_gemini_key") || "",
+    model: localStorage.getItem("techhome_gemini_model") || "gemini-1.5-flash",
+    temperature: parseFloat(localStorage.getItem("techhome_gemini_temp") || "0.7"),
+    enabled: JSON.parse(localStorage.getItem("techhome_gemini_enabled") || "true"),
+    bannerDismissed: JSON.parse(localStorage.getItem("techhome_gemini_banner_dismissed") || "false")
+  },
+
   // Salas de conversa isoladas para cada atendente
   agentRooms: {
     sarah: {
@@ -324,7 +333,7 @@ const AppState = {
       ]
     }
   },
-  
+
   // Modais Ativos
   activeModal: null
 };
@@ -344,62 +353,62 @@ const VALID_PROMOS = {
 // ==========================================================================
 const SoundFx = {
   ctx: null,
-  
+
   init() {
     if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       this.ctx = new AudioCtx();
     }
   },
-  
+
   playChime() {
     if (!AppState.soundEnabled) return;
     try {
       this.init();
       if (!this.ctx) return;
       if (this.ctx.state === 'suspended') this.ctx.resume();
-      
+
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      
+
       osc.type = "sine";
       osc.frequency.setValueAtTime(587.33, now); // D5
       osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
-      
+
       gain.gain.setValueAtTime(0.08, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-      
+
       osc.connect(gain);
       gain.connect(this.ctx.destination);
-      
+
       osc.start(now);
       osc.stop(now + 0.35);
-    } catch (e) {}
+    } catch (e) { }
   },
-  
+
   playClick() {
     if (!AppState.soundEnabled) return;
     try {
       this.init();
       if (!this.ctx) return;
       if (this.ctx.state === 'suspended') this.ctx.resume();
-      
+
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      
+
       osc.type = "triangle";
       osc.frequency.setValueAtTime(440, now);
       gain.gain.setValueAtTime(0.03, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-      
+
       osc.connect(gain);
       gain.connect(this.ctx.destination);
-      
+
       osc.start(now);
       osc.stop(now + 0.08);
-    } catch (e) {}
+    } catch (e) { }
   }
 };
 
@@ -410,7 +419,7 @@ const DOM = {
   html: document.documentElement,
   themeToggleBtn: document.getElementById("themeToggleBtn"),
   toastContainer: document.getElementById("toastContainer"),
-  
+
   // Cabeçalho e Gatilhos de Suporte
   globalSearchForm: document.getElementById("globalSearchForm"),
   globalSearchInput: document.getElementById("globalSearchInput"),
@@ -424,7 +433,7 @@ const DOM = {
   footerTrackBtn: document.getElementById("footerTrackBtn"),
   footerReturnsBtn: document.getElementById("footerReturnsBtn"),
   footerPromoBtn: document.getElementById("footerPromoBtn"),
-  
+
   // Catálogo e Filtros
   productsGrid: document.getElementById("productsGrid"),
   categoriesNav: document.querySelector(".categories-nav"),
@@ -439,7 +448,7 @@ const DOM = {
   emptyState: document.getElementById("emptyState"),
   resetFiltersEmptyBtn: document.getElementById("resetFiltersEmptyBtn"),
   askSupportEmptyBtn: document.getElementById("askSupportEmptyBtn"),
-  
+
   // Gaveta do Carrinho
   cartToggleBtn: document.getElementById("cartToggleBtn"),
   cartDrawer: document.getElementById("cartDrawer"),
@@ -463,7 +472,7 @@ const DOM = {
   cartTotal: document.getElementById("cartTotal"),
   proceedToCheckoutBtn: document.getElementById("proceedToCheckoutBtn"),
   cartNeedHelpBtn: document.getElementById("cartNeedHelpBtn"),
-  
+
   // Gaveta de Favoritos (Wishlist)
   wishlistToggleBtn: document.getElementById("wishlistToggleBtn"),
   wishlistDrawer: document.getElementById("wishlistDrawer"),
@@ -471,12 +480,12 @@ const DOM = {
   wishlistCount: document.getElementById("wishlistCount"),
   wishlistDrawerCount: document.getElementById("wishlistDrawerCount"),
   wishlistItemsList: document.getElementById("wishlistItemsList"),
-  
+
   // Modal de Visualização Rápida
   quickViewModal: document.getElementById("quickViewModal"),
   closeQuickViewBtn: document.getElementById("closeQuickViewBtn"),
   quickViewContent: document.getElementById("quickViewContent"),
-  
+
   // Modal de Checkout
   checkoutModal: document.getElementById("checkoutModal"),
   closeCheckoutBtn: document.getElementById("closeCheckoutBtn"),
@@ -488,7 +497,7 @@ const DOM = {
   checkoutShipping: document.getElementById("checkoutShipping"),
   checkoutTax: document.getElementById("checkoutTax"),
   checkoutGrandTotal: document.getElementById("checkoutGrandTotal"),
-  
+
   // Modal de Confirmação de Pedido
   orderSuccessModal: document.getElementById("orderSuccessModal"),
   confirmedOrderId: document.getElementById("confirmedOrderId"),
@@ -496,7 +505,7 @@ const DOM = {
   orderConfirmationDetails: document.getElementById("orderConfirmationDetails"),
   trackInChatBtn: document.getElementById("trackInChatBtn"),
   continueShoppingBtn: document.getElementById("continueShoppingBtn"),
-  
+
   // Chat de Suporte ao Vivo e Abas de Especialistas
   liveChatWidget: document.getElementById("liveChatWidget"),
   chatLauncherBtn: document.getElementById("chatLauncherBtn"),
@@ -526,7 +535,30 @@ const DOM = {
   chatMessageForm: document.getElementById("chatMessageForm"),
   chatTextInput: document.getElementById("chatTextInput"),
   chatEmojiBtn: document.getElementById("chatEmojiBtn"),
-  
+
+  // Elementos do Google Gemini IA
+  geminiStatusBadge: document.getElementById("geminiStatusBadge"),
+  geminiConfigBtn: document.getElementById("geminiConfigBtn"),
+  geminiSettingsModal: document.getElementById("geminiSettingsModal"),
+  closeGeminiSettingsBtn: document.getElementById("closeGeminiSettingsBtn"),
+  geminiSettingsForm: document.getElementById("geminiSettingsForm"),
+  geminiEnabledSwitch: document.getElementById("geminiEnabledSwitch"),
+  geminiApiKeyInput: document.getElementById("geminiApiKeyInput"),
+  toggleGeminiKeyBtn: document.getElementById("toggleGeminiKeyBtn"),
+  geminiModelSelect: document.getElementById("geminiModelSelect"),
+  geminiTempRange: document.getElementById("geminiTempRange"),
+  geminiTempValue: document.getElementById("geminiTempValue"),
+  testGeminiConnectionBtn: document.getElementById("testGeminiConnectionBtn"),
+  saveGeminiSettingsBtn: document.getElementById("saveGeminiSettingsBtn"),
+  clearGeminiKeyBtn: document.getElementById("clearGeminiKeyBtn"),
+  geminiTestFeedback: document.getElementById("geminiTestFeedback"),
+  geminiStatusDot: document.getElementById("geminiStatusDot"),
+  geminiStatusLabel: document.getElementById("geminiStatusLabel"),
+  geminiActiveModelBadge: document.getElementById("geminiActiveModelBadge"),
+  chatGeminiBanner: document.getElementById("chatGeminiBanner"),
+  bannerGeminiConfigBtn: document.getElementById("bannerGeminiConfigBtn"),
+  bannerGeminiCloseBtn: document.getElementById("bannerGeminiCloseBtn"),
+
   heroQuickBuyBtn: document.getElementById("heroQuickBuyBtn"),
   newsletterForm: document.getElementById("newsletterForm")
 };
@@ -540,6 +572,7 @@ function initApp() {
   updateCartUI();
   updateWishlistUI();
   initSupportChat();
+  initGeminiIntegration();
   attachEventListeners();
 }
 
@@ -573,16 +606,16 @@ function showToast(title, message, icon = "🔔", duration = 3500) {
     </div>
     <button class="toast-close" aria-label="Fechar notificação">&times;</button>
   `;
-  
+
   const closeBtn = toast.querySelector(".toast-close");
   closeBtn.addEventListener("click", () => removeToast(toast));
-  
+
   DOM.toastContainer.appendChild(toast);
-  
+
   const timer = setTimeout(() => {
     removeToast(toast);
   }, duration);
-  
+
   function removeToast(el) {
     clearTimeout(timer);
     el.classList.add("toast-hiding");
@@ -604,7 +637,7 @@ function getFilteredProducts() {
     if (AppState.currentCategory !== "all" && p.category !== AppState.currentCategory) {
       return false;
     }
-    
+
     if (AppState.searchQuery.trim() !== "") {
       const q = AppState.searchQuery.toLowerCase();
       const matchName = p.name.toLowerCase().includes(q);
@@ -612,15 +645,15 @@ function getFilteredProducts() {
       const matchCat = p.categoryLabel.toLowerCase().includes(q);
       if (!matchName && !matchDesc && !matchCat) return false;
     }
-    
+
     if (p.price > AppState.maxPrice) {
       return false;
     }
-    
+
     if (AppState.inStockOnly && !p.inStock) {
       return false;
     }
-    
+
     return true;
   }).sort((a, b) => {
     switch (AppState.sortBy) {
@@ -642,25 +675,25 @@ function getFilteredProducts() {
 function renderProducts() {
   const filtered = getFilteredProducts();
   DOM.productsGrid.innerHTML = "";
-  
+
   DOM.resultsCount.textContent = `Exibindo ${filtered.length} produto${filtered.length === 1 ? '' : 's'}`;
   renderFilterTags();
-  
+
   if (filtered.length === 0) {
     DOM.emptyState.style.display = "block";
     DOM.productsGrid.style.display = "none";
     return;
   }
-  
+
   DOM.emptyState.style.display = "none";
   DOM.productsGrid.style.display = "grid";
-  
+
   filtered.forEach(product => {
     const isWishlisted = AppState.wishlist.some(id => id === product.id);
     const card = document.createElement("article");
     card.className = "product-card";
     card.setAttribute("data-product-id", product.id);
-    
+
     card.innerHTML = `
       <div class="product-card-img-wrap">
         <img src="${product.image}" alt="${product.name}" class="product-card-img" loading="lazy">
@@ -707,7 +740,7 @@ function renderProducts() {
         </div>
       </div>
     `;
-    
+
     DOM.productsGrid.appendChild(card);
   });
 }
@@ -715,7 +748,7 @@ function renderProducts() {
 function renderFilterTags() {
   DOM.filterTagsContainer.innerHTML = "";
   let hasFilters = false;
-  
+
   if (AppState.currentCategory !== "all") {
     hasFilters = true;
     addTag(`Categoria: ${AppState.currentCategory}`, () => {
@@ -724,7 +757,7 @@ function renderFilterTags() {
       renderProducts();
     });
   }
-  
+
   if (AppState.searchQuery.trim() !== "") {
     hasFilters = true;
     addTag(`Busca: "${AppState.searchQuery}"`, () => {
@@ -734,7 +767,7 @@ function renderFilterTags() {
       renderProducts();
     });
   }
-  
+
   if (AppState.maxPrice < 5000) {
     hasFilters = true;
     addTag(`Preço Máx: ${formatMoney(AppState.maxPrice)}`, () => {
@@ -744,7 +777,7 @@ function renderFilterTags() {
       renderProducts();
     });
   }
-  
+
   if (AppState.inStockOnly) {
     hasFilters = true;
     addTag(`Apenas em Estoque`, () => {
@@ -753,9 +786,9 @@ function renderFilterTags() {
       renderProducts();
     });
   }
-  
+
   DOM.activeFiltersBar.style.display = hasFilters ? "flex" : "none";
-  
+
   function addTag(label, onRemove) {
     const tag = document.createElement("span");
     tag.className = "filter-badge";
@@ -777,14 +810,14 @@ function resetAllFilters() {
   AppState.maxPrice = 5000;
   AppState.inStockOnly = false;
   AppState.sortBy = "featured";
-  
+
   DOM.globalSearchInput.value = "";
   DOM.clearSearchBtn.style.display = "none";
   DOM.priceMaxRange.value = 5000;
   DOM.priceRangeValue.textContent = "R$ 5.000";
   DOM.inStockCheckbox.checked = false;
   DOM.sortSelect.value = "featured";
-  
+
   updateCategoryPillActive();
   renderProducts();
   SoundFx.playClick();
@@ -796,7 +829,7 @@ function resetAllFilters() {
 function addToCart(productId, quantity = 1) {
   const product = PRODUCTS.find(p => p.id === productId);
   if (!product) return;
-  
+
   const existingIndex = AppState.cart.findIndex(item => item.id === productId);
   if (existingIndex > -1) {
     AppState.cart[existingIndex].quantity += quantity;
@@ -809,7 +842,7 @@ function addToCart(productId, quantity = 1) {
       quantity: quantity
     });
   }
-  
+
   saveCart();
   updateCartUI();
   SoundFx.playChime();
@@ -847,7 +880,7 @@ function calculateCartTotals() {
   const subtotal = AppState.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   let discount = 0;
   let shipping = subtotal >= 250 || subtotal === 0 ? 0 : 29.90;
-  
+
   if (AppState.appliedPromo) {
     const promo = AppState.appliedPromo;
     if (promo.discountPercent) {
@@ -859,10 +892,10 @@ function calculateCartTotals() {
       shipping = 0;
     }
   }
-  
+
   const tax = 0;
   const total = Math.max(0, subtotal - discount + (subtotal > 0 ? shipping : 0));
-  
+
   return { subtotal, discount, shipping, tax, total };
 }
 
@@ -870,21 +903,21 @@ function updateCartUI() {
   const totalCount = AppState.cart.reduce((sum, item) => sum + item.quantity, 0);
   DOM.cartCount.textContent = totalCount;
   DOM.cartDrawerCount.textContent = totalCount;
-  
+
   const totals = calculateCartTotals();
   DOM.cartTotalHeader.textContent = formatMoney(totals.total);
-  
+
   const freeShipThreshold = 250.0;
   const progressPercent = Math.min(100, (totals.subtotal / freeShipThreshold) * 100);
   DOM.shippingProgressBar.style.width = `${progressPercent}%`;
-  
+
   if (totals.subtotal >= freeShipThreshold) {
     DOM.shippingProgressText.innerHTML = `🎉 <strong>Parabéns!</strong> Você ganhou <strong>FRETE GRÁTIS EXPRESSO</strong>!`;
   } else {
     const remaining = (freeShipThreshold - totals.subtotal);
     DOM.shippingProgressText.innerHTML = `Adicione mais <strong>${formatMoney(remaining)}</strong> para desbloquear <strong>FRETE GRÁTIS EXPRESSO</strong>!`;
   }
-  
+
   DOM.cartItemsList.innerHTML = "";
   if (AppState.cart.length === 0) {
     DOM.cartItemsList.innerHTML = `
@@ -916,12 +949,12 @@ function updateCartUI() {
       DOM.cartItemsList.appendChild(el);
     });
   }
-  
+
   DOM.cartSubtotal.textContent = formatMoney(totals.subtotal);
   DOM.cartShipping.textContent = totals.subtotal === 0 ? "R$ 0,00" : (totals.shipping === 0 ? "GRÁTIS" : formatMoney(totals.shipping));
   DOM.cartTax.textContent = "Incluso";
   DOM.cartTotal.textContent = formatMoney(totals.total);
-  
+
   if (totals.discount > 0 && AppState.appliedPromo) {
     DOM.discountRow.style.display = "flex";
     DOM.appliedPromoTag.textContent = AppState.appliedPromo.code;
@@ -934,7 +967,7 @@ function updateCartUI() {
 function applyPromoCode(code) {
   const cleanCode = code.trim().toUpperCase();
   if (!cleanCode) return;
-  
+
   const promo = VALID_PROMOS[cleanCode];
   if (promo) {
     AppState.appliedPromo = { code: cleanCode, ...promo };
@@ -956,7 +989,7 @@ function applyPromoCode(code) {
 function toggleWishlist(productId) {
   const index = AppState.wishlist.indexOf(productId);
   const product = PRODUCTS.find(p => p.id === productId);
-  
+
   if (index > -1) {
     AppState.wishlist.splice(index, 1);
     showToast("Removido dos Favoritos", product ? product.name : "", "🤍");
@@ -965,7 +998,7 @@ function toggleWishlist(productId) {
     SoundFx.playChime();
     showToast("Salvo nos Favoritos! ❤️", product ? product.name : "", "✨");
   }
-  
+
   localStorage.setItem("novamart_wishlist", JSON.stringify(AppState.wishlist));
   updateWishlistUI();
   renderProducts();
@@ -975,7 +1008,7 @@ function updateWishlistUI() {
   const count = AppState.wishlist.length;
   DOM.wishlistCount.textContent = count;
   DOM.wishlistDrawerCount.textContent = count;
-  
+
   DOM.wishlistItemsList.innerHTML = "";
   if (count === 0) {
     DOM.wishlistItemsList.innerHTML = `
@@ -989,7 +1022,7 @@ function updateWishlistUI() {
     AppState.wishlist.forEach(id => {
       const product = PRODUCTS.find(p => p.id === id);
       if (!product) return;
-      
+
       const item = document.createElement("div");
       item.className = "cart-item-card";
       item.innerHTML = `
@@ -1014,7 +1047,7 @@ function updateWishlistUI() {
 function openQuickView(productId) {
   const product = PRODUCTS.find(p => p.id === productId);
   if (!product) return;
-  
+
   DOM.quickViewContent.innerHTML = `
     <div class="qv-gallery">
       <img src="${product.image}" alt="${product.name}" class="qv-main-img">
@@ -1059,7 +1092,7 @@ function openQuickView(productId) {
       </div>
     </div>
   `;
-  
+
   document.getElementById("qvAddToCartBtn").addEventListener("click", () => {
     addToCart(product.id, 1);
   });
@@ -1070,7 +1103,7 @@ function openQuickView(productId) {
     closeModal(DOM.quickViewModal);
     openSupportChatWithProduct(product.id);
   });
-  
+
   openModal(DOM.quickViewModal);
 }
 
@@ -1082,9 +1115,9 @@ function openCheckoutModal() {
     showToast("Carrinho Vazio", "Adicione produtos antes de ir para o pagamento.", "⚠️");
     return;
   }
-  
+
   closeDrawer(DOM.cartDrawer);
-  
+
   DOM.checkoutItemsPreview.innerHTML = "";
   AppState.cart.forEach(item => {
     const el = document.createElement("div");
@@ -1095,39 +1128,39 @@ function openCheckoutModal() {
     `;
     DOM.checkoutItemsPreview.appendChild(el);
   });
-  
+
   const totals = calculateCartTotals();
   DOM.checkoutSubtotal.textContent = formatMoney(totals.subtotal);
   DOM.checkoutShipping.textContent = totals.shipping === 0 ? "GRÁTIS" : formatMoney(totals.shipping);
   DOM.checkoutTax.textContent = "Incluso";
   DOM.checkoutGrandTotal.textContent = formatMoney(totals.total);
-  
+
   if (totals.discount > 0) {
     DOM.checkoutDiscountRow.style.display = "flex";
     DOM.checkoutDiscount.textContent = `-${formatMoney(totals.discount)}`;
   } else {
     DOM.checkoutDiscountRow.style.display = "none";
   }
-  
+
   openModal(DOM.checkoutModal);
 }
 
 function processCheckout(event) {
   event.preventDefault();
-  
+
   const submitBtn = document.getElementById("submitOrderBtn");
   submitBtn.disabled = true;
   submitBtn.innerHTML = `<span>Processando Pagamento Seguro...</span>`;
-  
+
   setTimeout(() => {
     submitBtn.disabled = false;
     submitBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg><span>Pagar & Confirmar Pedido</span>`;
-    
+
     const randomNum = Math.floor(10000 + Math.random() * 90000);
     const orderId = `ORD-${randomNum}`;
     const email = document.getElementById("checkEmail").value || "cliente@exemplo.com";
     const totals = calculateCartTotals();
-    
+
     DOM.confirmedOrderId.textContent = orderId;
     DOM.orderConfirmationDetails.innerHTML = `
       <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
@@ -1147,13 +1180,13 @@ function processCheckout(event) {
         <strong>2 a 4 Dias Úteis (Sedex Expresso)</strong>
       </div>
     `;
-    
+
     AppState.cart = [];
     AppState.appliedPromo = null;
     localStorage.removeItem("novamart_promo");
     saveCart();
     updateCartUI();
-    
+
     closeModal(DOM.checkoutModal);
     openModal(DOM.orderSuccessModal);
     SoundFx.playChime();
@@ -1175,12 +1208,12 @@ function updateActiveAgentUI(agent) {
   DOM.chatAgentRole.textContent = agent.role;
   DOM.typingAgentAvatar.src = agent.avatar;
   DOM.typingAgentLabel.textContent = `${agent.name.split(' ')[0]} está digitando`;
-  
+
   // Atualizar botões de abas no topo do chat
   document.querySelectorAll(".agent-tab-btn").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.agent === agent.id);
   });
-  
+
   // Atualizar opções do dropdown
   document.querySelectorAll(".agent-select-opt").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.agent === agent.id);
@@ -1201,7 +1234,7 @@ function renderAgentRoomMessages(agentId) {
 
 function renderSingleMessage(msg) {
   const msgRow = document.createElement("div");
-  
+
   if (msg.sender === "user") {
     msgRow.className = "msg-row msg-user";
     let attachmentHtml = "";
@@ -1216,7 +1249,7 @@ function renderSingleMessage(msg) {
         </div>
       `;
     }
-    
+
     msgRow.innerHTML = `
       <div class="msg-bubble-wrap">
         <div class="msg-bubble">
@@ -1230,7 +1263,7 @@ function renderSingleMessage(msg) {
     // Mensagem do Atendente
     const agent = SUPPORT_AGENTS[msg.agentId || AppState.activeAgent];
     msgRow.className = "msg-row msg-agent";
-    
+
     let productHtml = "";
     if (msg.product) {
       productHtml = `
@@ -1244,7 +1277,7 @@ function renderSingleMessage(msg) {
         </div>
       `;
     }
-    
+
     let ticketHtml = "";
     if (msg.ticketId) {
       ticketHtml = `
@@ -1254,7 +1287,7 @@ function renderSingleMessage(msg) {
         </div>
       `;
     }
-    
+
     msgRow.innerHTML = `
       <img src="${agent.avatar}" alt="${agent.name}" class="msg-avatar">
       <div class="msg-bubble-wrap">
@@ -1263,10 +1296,10 @@ function renderSingleMessage(msg) {
           ${productHtml}
           ${ticketHtml}
         </div>
-        <span class="msg-timestamp">${agent.name.split(' ')[0]} • ${msg.time}</span>
+        <span class="msg-timestamp">${agent.name.split(' ')[0]} • ${msg.time}${msg.isAi ? ' <span class="gemini-ai-tag">✦ Gemini IA</span>' : ''}</span>
       </div>
     `;
-    
+
     const viewBtn = msgRow.querySelector(".btn-chat-product-view");
     if (viewBtn) {
       viewBtn.addEventListener("click", () => {
@@ -1274,7 +1307,7 @@ function renderSingleMessage(msg) {
       });
     }
   }
-  
+
   DOM.chatMessagesStream.appendChild(msgRow);
 }
 
@@ -1283,16 +1316,16 @@ function switchAgent(agentId) {
     DOM.agentSelectMenu.style.display = "none";
     return;
   }
-  
+
   AppState.activeAgent = agentId;
   const agent = SUPPORT_AGENTS[agentId];
   updateActiveAgentUI(agent);
   DOM.agentSelectMenu.style.display = "none";
-  
+
   // Limpa o chat atual e carrega a sala exclusiva deste atendente
   renderAgentRoomMessages(agentId);
   SoundFx.playClick();
-  
+
   // Se for o primeiro acesso a essa sala, garante saudação
   if (!AppState.agentRooms[agentId] || AppState.agentRooms[agentId].messages.length === 0) {
     AppState.agentRooms[agentId] = {
@@ -1338,13 +1371,13 @@ function toggleSupportChat() {
 function openSupportChatWithProduct(productId) {
   const product = PRODUCTS.find(p => p.id === productId);
   if (!product) return;
-  
+
   AppState.attachedProduct = product;
   DOM.attachedProductImg.src = product.image;
   DOM.attachedProductTitle.textContent = product.name;
   DOM.attachedProductPrice.textContent = formatMoney(product.price);
   DOM.chatAttachedProduct.style.display = "flex";
-  
+
   openSupportChat();
   DOM.chatTextInput.focus();
   DOM.chatTextInput.placeholder = `Pergunte sobre ${product.name}...`;
@@ -1359,11 +1392,11 @@ function removeAttachedProduct() {
 function sendUserMessage(text) {
   const cleanText = text.trim();
   if (!cleanText && !AppState.attachedProduct) return;
-  
+
   const currentAgentId = AppState.activeAgent;
   const attached = AppState.attachedProduct;
   const timeStr = formatCurrentTime();
-  
+
   const userMsgObj = {
     id: Date.now(),
     sender: "user",
@@ -1371,28 +1404,28 @@ function sendUserMessage(text) {
     attached: attached,
     time: timeStr
   };
-  
+
   // Salva na sala do atendente atual
   if (!AppState.agentRooms[currentAgentId]) {
     AppState.agentRooms[currentAgentId] = { messages: [] };
   }
   AppState.agentRooms[currentAgentId].messages.push(userMsgObj);
-  
+
   // Renderiza no stream
   renderSingleMessage(userMsgObj);
   scrollChatToBottom();
   SoundFx.playClick();
-  
+
   DOM.chatTextInput.value = "";
   removeAttachedProduct();
-  
+
   processAgentResponse(cleanText, attached, currentAgentId);
 }
 
-function addAgentMessageToRoom(agentId, htmlContent, playSound = true, embeddedProduct = null, ticketId = null) {
+function addAgentMessageToRoom(agentId, htmlContent, playSound = true, embeddedProduct = null, ticketId = null, isAi = false) {
   const timeStr = formatCurrentTime();
   const agent = SUPPORT_AGENTS[agentId];
-  
+
   const agentMsgObj = {
     id: Date.now() + Math.random(),
     sender: "agent",
@@ -1400,20 +1433,21 @@ function addAgentMessageToRoom(agentId, htmlContent, playSound = true, embeddedP
     html: htmlContent,
     time: timeStr,
     product: embeddedProduct,
-    ticketId: ticketId
+    ticketId: ticketId,
+    isAi: isAi
   };
-  
+
   if (!AppState.agentRooms[agentId]) {
     AppState.agentRooms[agentId] = { messages: [] };
   }
   AppState.agentRooms[agentId].messages.push(agentMsgObj);
-  
+
   // Se o usuário ainda estiver na sala deste atendente, renderiza diretamente
   if (AppState.activeAgent === agentId) {
     renderSingleMessage(agentMsgObj);
     scrollChatToBottom();
   }
-  
+
   if (playSound) {
     SoundFx.playChime();
     if (!DOM.chatWindowCard.classList.contains("active")) {
@@ -1429,7 +1463,7 @@ function simulateAgentTyping(callback, delay = 900) {
   AppState.isAgentTyping = true;
   DOM.typingIndicator.style.display = "flex";
   scrollChatToBottom();
-  
+
   setTimeout(() => {
     AppState.isAgentTyping = false;
     DOM.typingIndicator.style.display = "none";
@@ -1438,261 +1472,691 @@ function simulateAgentTyping(callback, delay = 900) {
 }
 
 // ==========================================================================
-// RESPOSTAS CONTEXTUAIS PERSONALIZADAS POR ESPECIALISTA
+// 14.1 SERVIÇO DE INTEGRAÇÃO COM A API GOOGLE GEMINI
 // ==========================================================================
-function processAgentResponse(userInput, attachedProduct, targetAgentId) {
+const GeminiService = {
+  // Constrói o System Instruction com contexto completo da loja e persona do atendente
+  buildSystemInstruction(agentId) {
+    const agent = SUPPORT_AGENTS[agentId] || SUPPORT_AGENTS.sarah;
+
+    const catalogSummary = PRODUCTS.map(p =>
+      `- ID ${p.id}: "${p.name}" | Categoria: ${p.categoryLabel} | Preço: R$ ${p.price.toFixed(2)} (De: R$ ${p.originalPrice.toFixed(2)}, Desconto: ${p.discountPercent}%) | Nota: ${p.rating}★ (${p.reviewsCount} avaliações) | Estoque: ${p.stockCount} un. | Destaques: ${p.features.join("; ")} | Descrição: ${p.description}`
+    ).join("\n");
+
+    const promoSummary = Object.entries(VALID_PROMOS).map(([code, info]) =>
+      `- Cupom: "${code}" -> ${info.description}`
+    ).join("\n");
+
+    let personaSpecifics = "";
+    if (agentId === "alex") {
+      personaSpecifics = `Você é ALEX RIVERA, especialista técnico em Áudio de Alta Fidelidade e Hardware Gamer na loja TechHome.
+Seu tom de voz é dinâmico, conhecedor, prestativo e focado em alto desempenho técnico.
+Você domina drivers de áudio, cancelamento ativo de ruído híbrido (ANC), codecs (LDAC, AAC), latência em milissegundos, switches óptico-mecânicos, sensores de 26.000 DPI e setups profissionais.`;
+    } else if (agentId === "david") {
+      personaSpecifics = `Você é DAVID CHEN, especialista em Logística, Prazos de Entrega, Trocas e Pós-Venda na loja TechHome.
+Seu tom de voz é calmo, seguro, atencioso e resolutivo.
+Você orienta sobre prazos de entrega (2 a 4 dias úteis para capitais via Sedex Expresso, 3 a 7 dias para outras regiões), frete grátis para compras acima de R$ 250,00, rastreamento de códigos como ORD-89241, 2 anos de garantia oficial com substituição expressa e 30 dias de devolução sem custos.`;
+    } else {
+      personaSpecifics = `Você é SARAH MILLER, especialista em Sucesso do Cliente, Vendas e Atendimento Geral na loja TechHome.
+Seu tom de voz é caloroso, simpático, comercial e solícito.
+Você recomenda produtos com base na necessidade do cliente, auxilia com cupons ativos (ex: DESCONTO20 para 20% OFF, FRETELIVRE para frete grátis, SAVE20), métodos de pagamento (Pix instantâneo, Cartão de Crédito até 12x sem juros, Boleto e Apple Pay) e conclusão da compra.`;
+    }
+
+    return `Você é o assistente virtual com inteligência artificial da loja online "TechHome" (NovaMart), um e-commerce brasileiro de eletrônicos e tecnologia de alta performance.
+
+PERSONA DO ATENDENTE:
+${personaSpecifics}
+
+CATÁLOGO OFICIAL DE PRODUTOS DA TECHHOME:
+${catalogSummary}
+
+CUPONS DE DESCONTO ATIVOS HOJE:
+${promoSummary}
+
+POLÍTICAS DA LOJA:
+- Frete Grátis automático a partir de R$ 250,00.
+- Prazos de Envio: 2 a 4 dias úteis para Capitais (Sedex Expresso); 3 a 7 dias úteis para demais regiões.
+- Formas de Pagamento: Pix com aprovação imediata, Cartão de Crédito em até 12x sem juros, Boleto bancário (1 dia útil), Apple Pay.
+- Garantia Total de 2 Anos em todos os produtos com nota fiscal eletrônica e troca rápida por unidade nova.
+- Trocas e Devoluções: 30 dias corridos para experimentar o produto, com etiqueta reversa dos Correios gratuita.
+- Protocolos de Atendimento VIP: gerados no formato SUP-XXXXX (ex: SUP-84210).
+
+DIRETRIZES FUNDAMENTAIS DE ATENDIMENTO E COMPRA:
+1. Responda SEMPRE em português do Brasil (pt-BR).
+2. PRIORIDADE MÁXIMA: Responda a QUALQUER pergunta de compra com clareza, exatidão e entusiasmo comercial:
+   - Explique preços, parcelamento em até 12x sem juros no cartão, descontos no Pix, cupom DESCONTO20 (20% OFF) e frete grátis acima de R$ 250 (ou cupom FRETELIVRE).
+   - Quando o cliente quiser comprar, oriente o passo a passo: clicar em "Adicionar ao Carrinho", abrir a sacola no topo da página, aplicar o cupom e clicar em "Avançar para o Pagamento".
+   - Informe que o estoque está a pronta entrega no Centro de Distribuição e despachado em menos de 24 horas úteis via Sedex.
+3. Seja prestativo, claro e objetivo (respostas entre 1 a 3 parágrafos curtos e bem estruturados).
+4. Use formatação Markdown (negrito **destaque** e marcadores com '• ' para listas).
+5. Ao recomendar ou discutir qualquer produto específico da loja, você PODE incluir a tag [[PRODUTO:id]] ao final (exemplo: [[PRODUTO:1]]) para que o site renderize automaticamente o card interativo com imagem, preço e botão "Ver Detalhes".
+6. Não invente produtos que não estejam no catálogo fornecido.
+7. Nunca mencione ser uma IA externa genérica; você faz parte da equipe de especialistas da TechHome.`;
+  },
+
+  // Monta histórico de mensagens para a API Gemini (multi-turn)
+  buildContents(targetAgentId, currentInput, attachedProduct) {
+    const room = AppState.agentRooms[targetAgentId];
+    const rawHistory = room && room.messages ? room.messages.slice(-6) : [];
+
+    const contents = [];
+
+    for (const m of rawHistory) {
+      if (m.sender === "user") {
+        let textContent = m.text || "";
+        if (m.attached) {
+          textContent = `[Pergunta sobre o produto "${m.attached.name}"]: ${textContent}`;
+        }
+        if (textContent.trim()) {
+          contents.push({
+            role: "user",
+            parts: [{ text: textContent }]
+          });
+        }
+      } else if (m.sender === "agent") {
+        const plainText = m.html ? m.html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : "";
+        if (plainText) {
+          if (contents.length > 0 && contents[contents.length - 1].role === "model") {
+            contents[contents.length - 1].parts[0].text += "\n" + plainText;
+          } else {
+            contents.push({
+              role: "model",
+              parts: [{ text: plainText }]
+            });
+          }
+        }
+      }
+    }
+
+    // O Gemini exige que o primeiro item de contents seja 'user'
+    while (contents.length > 0 && contents[0].role !== "user") {
+      contents.shift();
+    }
+
+    // Adiciona a mensagem atual do usuário
+    let currentText = currentInput;
+    if (attachedProduct) {
+      currentText = `[O cliente está com o produto anexado "${attachedProduct.name}" (Preço: ${formatMoney(attachedProduct.price)}, Categoria: ${attachedProduct.categoryLabel})]:\n${currentInput}`;
+    }
+
+    if (contents.length > 0 && contents[contents.length - 1].role === "user") {
+      contents[contents.length - 1].parts[0].text += "\n" + currentText;
+    } else {
+      contents.push({
+        role: "user",
+        parts: [{ text: currentText }]
+      });
+    }
+
+    return contents;
+  },
+
+  // Chamada HTTP REST para a API Google Gemini v1beta
+  async callGeminiApi(apiKey, model, systemInstruction, contents, temperature = 0.7) {
+    const cleanKey = apiKey.trim();
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(cleanKey)}`;
+
+    const payload = {
+      systemInstruction: {
+        parts: [{ text: systemInstruction }]
+      },
+      contents: contents,
+      generationConfig: {
+        temperature: temperature,
+        maxOutputTokens: 800
+      }
+    };
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      let errMsg = `HTTP ${res.status}`;
+      try {
+        const errData = await res.json();
+        if (errData?.error?.message) {
+          errMsg = errData.error.message;
+        }
+      } catch (_) { }
+      throw new Error(errMsg);
+    }
+
+    const data = await res.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      throw new Error("A API da Gemini não retornou nenhum texto.");
+    }
+    return text;
+  },
+
+  // Executa geração completa de resposta da Gemini
+  async generateReply(userInput, attachedProduct, targetAgentId) {
+    const apiKey = AppState.gemini.apiKey;
+    const model = AppState.gemini.model || "gemini-1.5-flash";
+    const temp = AppState.gemini.temperature ?? 0.7;
+
+    if (!apiKey) {
+      return { success: false, error: "Chave da API Gemini não configurada." };
+    }
+
+    const systemInstruction = this.buildSystemInstruction(targetAgentId);
+    const contents = this.buildContents(targetAgentId, userInput, attachedProduct);
+
+    try {
+      const rawText = await this.callGeminiApi(apiKey, model, systemInstruction, contents, temp);
+
+      // Identifica e extrai card de produto para exibição
+      const matchedProduct = this.extractEmbeddedProduct(rawText, attachedProduct);
+
+      // Remove tags internas como [[PRODUTO:1]] para não poluir o texto visível
+      const cleanedText = rawText.replace(/\[\[PRODUTO:\d+\]\]/gi, '').trim();
+
+      // Formata Markdown para HTML seguro
+      const formattedHtml = this.formatMarkdown(cleanedText);
+
+      return {
+        success: true,
+        html: formattedHtml,
+        product: matchedProduct
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message || "Falha na comunicação com o Google Gemini."
+      };
+    }
+  },
+
+  // Testa a conexão com a chave informada
+  async testConnection(apiKey, model) {
+    if (!apiKey || !apiKey.trim()) {
+      return { success: false, error: "Por favor, digite ou cole uma API Key válida do Google Gemini." };
+    }
+    try {
+      const instruction = "Você é um testador de API. Responda apenas: 'Conexão com Google Gemini realizada com sucesso!'";
+      const contents = [{ role: "user", parts: [{ text: "Teste de conexão." }] }];
+      const reply = await this.callGeminiApi(apiKey.trim(), model, instruction, contents, 0.1);
+      return { success: true, message: reply.trim() };
+    } catch (err) {
+      return { success: false, error: err.message || "Não foi possível autenticar na API do Google Gemini." };
+    }
+  },
+
+  // Localiza o produto no catálogo para exibir o card visual no chat
+  extractEmbeddedProduct(text, attachedProduct) {
+    if (attachedProduct) return attachedProduct;
+
+    // 1. Tag explícita [[PRODUTO:ID]]
+    const tagMatch = text.match(/\[\[PRODUTO:(\d+)\]\]/i);
+    if (tagMatch) {
+      const pid = parseInt(tagMatch[1]);
+      const found = PRODUCTS.find(p => p.id === pid);
+      if (found) return found;
+    }
+
+    // 2. Busca por nome do produto no catálogo
+    const lower = text.toLowerCase();
+    for (const prod of PRODUCTS) {
+      const pName = prod.name.toLowerCase();
+      if (lower.includes(pName)) {
+        return prod;
+      }
+    }
+
+    return null;
+  },
+
+  // Conversor simples e seguro de Markdown para HTML
+  formatMarkdown(raw) {
+    if (!raw) return "";
+    let html = escapeHtml(raw);
+
+    // Negrito: **texto**
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // Itálico: *texto*
+    html = html.replace(/(^|[^\*])\*([^\*]+)\*([^\*]|$)/g, '$1<em>$2</em>$3');
+
+    // Marcadores de lista: • item ou * item
+    html = html.replace(/^[•\-\*]\s+(.*)$/gm, '• $1');
+
+    // Quebras de linha
+    html = html.replace(/\n/g, '<br>');
+
+    return html;
+  }
+};
+
+// ==========================================================================
+// 14.2 FUNÇÕES DE CONTROLE DE INTERFACE DO GEMINI
+// ==========================================================================
+function initGeminiIntegration() {
+  if (DOM.geminiEnabledSwitch) {
+    DOM.geminiEnabledSwitch.checked = AppState.gemini.enabled;
+  }
+  if (DOM.geminiApiKeyInput) {
+    DOM.geminiApiKeyInput.value = AppState.gemini.apiKey;
+  }
+  if (DOM.geminiModelSelect) {
+    DOM.geminiModelSelect.value = AppState.gemini.model;
+  }
+  if (DOM.geminiTempRange) {
+    DOM.geminiTempRange.value = AppState.gemini.temperature;
+  }
+  if (DOM.geminiTempValue) {
+    DOM.geminiTempValue.textContent = AppState.gemini.temperature.toFixed(1);
+  }
+
+  updateGeminiStatusUI();
+
+  // Se o banner já tiver sido dispensado ou a chave já estiver presente
+  if (DOM.chatGeminiBanner) {
+    if (AppState.gemini.bannerDismissed || AppState.gemini.apiKey) {
+      DOM.chatGeminiBanner.style.display = "none";
+    }
+  }
+}
+
+function updateGeminiStatusUI() {
+  const isEnabled = AppState.gemini.enabled;
+  const hasKey = !!AppState.gemini.apiKey;
+  const model = AppState.gemini.model || "gemini-1.5-flash";
+
+  if (DOM.geminiActiveModelBadge) {
+    DOM.geminiActiveModelBadge.textContent = model;
+  }
+
+  if (!isEnabled) {
+    if (DOM.geminiStatusDot) DOM.geminiStatusDot.className = "gemini-status-dot fallback";
+    if (DOM.geminiStatusLabel) DOM.geminiStatusLabel.textContent = "Status: IA Desativada (Modo Local Ativo)";
+    if (DOM.geminiStatusBadge) {
+      DOM.geminiStatusBadge.classList.remove("active");
+      DOM.geminiStatusBadge.title = "IA Gemini Desativada nas Configurações";
+    }
+  } else if (!hasKey) {
+    if (DOM.geminiStatusDot) DOM.geminiStatusDot.className = "gemini-status-dot fallback";
+    if (DOM.geminiStatusLabel) DOM.geminiStatusLabel.textContent = "Status: Demonstração (Sem API Key)";
+    if (DOM.geminiStatusBadge) {
+      DOM.geminiStatusBadge.classList.remove("active");
+      DOM.geminiStatusBadge.title = "Clique para configurar sua Gemini API Key";
+    }
+  } else {
+    if (DOM.geminiStatusDot) DOM.geminiStatusDot.className = "gemini-status-dot online";
+    if (DOM.geminiStatusLabel) DOM.geminiStatusLabel.textContent = `Status: Conectado (${model})`;
+    if (DOM.geminiStatusBadge) {
+      DOM.geminiStatusBadge.classList.add("active");
+      DOM.geminiStatusBadge.title = `Google Gemini IA Ativo (${model})`;
+    }
+  }
+}
+
+function openGeminiSettings() {
+  if (DOM.geminiApiKeyInput) DOM.geminiApiKeyInput.value = AppState.gemini.apiKey;
+  if (DOM.geminiEnabledSwitch) DOM.geminiEnabledSwitch.checked = AppState.gemini.enabled;
+  if (DOM.geminiModelSelect) DOM.geminiModelSelect.value = AppState.gemini.model;
+  if (DOM.geminiTempRange) DOM.geminiTempRange.value = AppState.gemini.temperature;
+  if (DOM.geminiTempValue) DOM.geminiTempValue.textContent = AppState.gemini.temperature.toFixed(1);
+  if (DOM.geminiTestFeedback) {
+    DOM.geminiTestFeedback.style.display = "none";
+    DOM.geminiTestFeedback.textContent = "";
+  }
+  openModal(DOM.geminiSettingsModal);
+}
+
+function closeGeminiSettings() {
+  closeModal(DOM.geminiSettingsModal);
+}
+
+// ==========================================================================
+// 14.3 PROCESSAMENTO DE RESPOSTA DO ATENDENTE (GEMINI + FALLBACK LOCAL)
+// ==========================================================================
+async function processAgentResponse(userInput, attachedProduct, targetAgentId) {
+  const agent = SUPPORT_AGENTS[targetAgentId];
+
+  // 1. Se Gemini estiver ativado e com API Key definida, responde via IA em tempo real
+  if (AppState.gemini.enabled && AppState.gemini.apiKey) {
+    AppState.isAgentTyping = true;
+    DOM.typingAgentLabel.textContent = `${agent.name.split(' ')[0]} (Gemini IA) está pensando...`;
+    DOM.typingIndicator.style.display = "flex";
+    scrollChatToBottom();
+
+    try {
+      const result = await GeminiService.generateReply(userInput, attachedProduct, targetAgentId);
+      AppState.isAgentTyping = false;
+      DOM.typingIndicator.style.display = "none";
+
+      if (result.success) {
+        addAgentMessageToRoom(targetAgentId, result.html, true, result.product, null, true);
+
+        setTimeout(() => {
+          DOM.chatFeedbackPrompt.style.display = "block";
+          scrollChatToBottom();
+        }, 4000);
+        return;
+      } else {
+        console.warn("Falha no Gemini:", result.error);
+        showToast("Modo Demonstração", `Não foi possível consultar a IA: ${result.error.substring(0, 40)}. Usando resposta local.`, "ℹ️");
+      }
+    } catch (err) {
+      console.error("Erro inesperado no Gemini:", err);
+      AppState.isAgentTyping = false;
+      DOM.typingIndicator.style.display = "none";
+    }
+  }
+
+  // 2. Fallback local / Modo Demonstração existente
+  processLocalAgentResponse(userInput, attachedProduct, targetAgentId);
+}
+
+function processLocalAgentResponse(userInput, attachedProduct, targetAgentId) {
   const q = userInput.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const agent = SUPPORT_AGENTS[targetAgentId];
-  
+
   simulateAgentTyping(() => {
-    // 1. DÚVIDA SOBRE PRODUTO ANEXADO ESPECÍFICO
-    if (attachedProduct) {
-      if (targetAgentId === "alex") {
+    // Identificação dinâmica de produto mencionado na pergunta ou anexado
+    const matchedProduct = attachedProduct || PRODUCTS.find(p => {
+      const pName = p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      return q.includes(pName) ||
+        (p.id === 1 && (q.includes("aura") || q.includes("headphone") || (q.includes("fone") && (q.includes("anc") || q.includes("ruido") || q.includes("bluetooth") || q.includes("ouvido sem fio"))))) ||
+        (p.id === 2 && (q.includes("chrono") || q.includes("smartwatch") || q.includes("relogio") || q.includes("ultra 2") || q.includes("ecg"))) ||
+        (p.id === 3 && (q.includes("apex") || q.includes("teclado") || q.includes("mecanico") || q.includes("switch"))) ||
+        (p.id === 4 && (q.includes("glow") || q.includes("luminaria") || q.includes("lampada") || q.includes("rgb") || q.includes("monitor"))) ||
+        (p.id === 5 && (q.includes("pulse") || q.includes("buds") || q.includes("tws") || (q.includes("fone") && (q.includes("intra") || q.includes("pequeno") || q.includes("corrida") || q.includes("estojo"))))) ||
+        (p.id === 6 && (q.includes("gan") || q.includes("100w") || (q.includes("carregador") && (q.includes("rapido") || q.includes("parede") || q.includes("usb-c"))))) ||
+        (p.id === 7 && (q.includes("vitalring") || q.includes("vital") || q.includes("anel"))) ||
+        (p.id === 8 && (q.includes("progrip") || q.includes("mouse") || q.includes("dpi") || q.includes("sensor"))) ||
+        (p.id === 9 && (q.includes("soundcore") || q.includes("caixa de som") || q.includes("speaker") || q.includes("caixinha") || q.includes("grave"))) ||
+        (p.id === 10 && (q.includes("magsafe") || (q.includes("suporte") && q.includes("3 em 1")) || q.includes("inducao") || q.includes("estacao")));
+    });
+
+    // 1. COMO COMPRAR / FECHAR PEDIDO / ADICIONAR AO CARRINHO / QUERO COMPRAR
+    if (q.includes("como comprar") || q.includes("quero comprar") || q.includes("como faco para comprar") || q.includes("adicionar ao carrinho") || q.includes("colocar no carrinho") || q.includes("finalizar compra") || q.includes("fechar pedido") || q.includes("como faz o pedido") || q.includes("passo a passo")) {
+      if (matchedProduct) {
+        const parcela12x = (matchedProduct.price / 12).toFixed(2).replace('.', ',');
         addAgentMessageToRoom(
           targetAgentId,
-          `Análise técnica do **${attachedProduct.name}**: Esse modelo entrega excelente fidelidade e construção de alto nível.<br><br>` +
-          `• **Especificações:** Possui recursos de ponta com baixíssima latência e alta durabilidade.<br>` +
-          `• **Estoque:** Temos ${attachedProduct.stockCount} unidades prontas para envio.<br>` +
-          `• **Preço Especial:** Está por **${formatMoney(attachedProduct.price)}**. Quer saber sobre compatibilidade com algum aparelho seu?`,
+          `Excelente escolha! Para comprar o **${matchedProduct.name}** agora mesmo 🛒:<br><br>` +
+          `• **Preço:** Apenas **${formatMoney(matchedProduct.price)}** ou em até **12x de R$ ${parcela12x} sem juros** no cartão.<br>` +
+          `• **Como fazer:** Clique no botão **"Ver Detalhes"** abaixo para abrir a janela do produto ou clique direto em **"Adicionar ao Carrinho"** no catálogo.<br>` +
+          `• **Finalização:** Abra a sua sacola no topo da página, aplique o cupom **DESCONTO20** para ganhar 20% OFF e clique em **Avançar para o Pagamento**!<br><br>` +
+          `Temos **${matchedProduct.stockCount} unidades** em estoque com despacho imediato via Sedex!`,
           true,
-          attachedProduct
-        );
-      } else if (targetAgentId === "david") {
-        addAgentMessageToRoom(
-          targetAgentId,
-          `Sobre o envio do **${attachedProduct.name}**: Ele já está embalado em nosso centro logístico com despacho prioritário via Sedex Expresso.<br><br>` +
-          `• **Garantia de Envio:** Inclui 2 anos de garantia com substituição imediata.<br>` +
-          `• **Devolução:** 30 dias de prazo com etiqueta reversa gratuita se precisar trocar.`,
-          true,
-          attachedProduct
+          matchedProduct
         );
       } else {
         addAgentMessageToRoom(
           targetAgentId,
-          `Ótima escolha! O **${attachedProduct.name}** está com preço promocional de **${formatMoney(attachedProduct.price)}** (com ${attachedProduct.discountPercent}% de desconto).<br><br>` +
-          `• **Estoque:** Temos ${attachedProduct.stockCount} unidades no centro de distribuição.<br>` +
-          `• **Garantia:** 2 anos de garantia oficial com substituição expressa.<br>` +
-          `• **Dica:** Você pode usar o cupom **DESCONTO20** para ganhar mais 20% OFF!`,
-          true,
-          attachedProduct
+          `Comprar na TechHome é muito simples, rápido e 100% seguro 🛍️:<br><br>` +
+          `1. **Escolha o produto:** Navegue pelo catálogo e clique em **"Adicionar ao Carrinho"** no item desejado.<br>` +
+          `2. **Abra o carrinho:** Clique no ícone da sacola no canto superior direito da página.<br>` +
+          `3. **Economize:** Digite o cupom **DESCONTO20** no campo de cupom e clique em **Aplicar** (ganhe 20% de desconto!).<br>` +
+          `4. **Checkout:** Clique em **"Avançar para o Pagamento"**, preencha seu endereço e escolha Pix (instantâneo) ou Cartão em até 12x sem juros!<br><br>` +
+          `Gostaria de ajuda para escolher o produto ideal para você hoje?`
         );
       }
       return;
     }
 
-    // 2. BUSCA DINÂMICA POR PRODUTOS NO CATÁLOGO
-    const matchedProduct = PRODUCTS.find(p => {
-      const pName = p.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      return q.includes(pName) || 
-             (q.includes("fone") && (p.id === 1 || p.id === 5)) ||
-             (q.includes("headphone") && p.id === 1) ||
-             (q.includes("smartwatch") && p.id === 2) ||
-             (q.includes("relogio") && p.id === 2) ||
-             (q.includes("teclado") && p.id === 3) ||
-             (q.includes("luminaria") && p.id === 4) ||
-             (q.includes("lampada") && p.id === 4) ||
-             (q.includes("carregador") && (p.id === 6 || p.id === 10)) ||
-             (q.includes("anel") && p.id === 7) ||
-             (q.includes("mouse") && p.id === 8) ||
-             (q.includes("caixa de som") && p.id === 9) ||
-             (q.includes("magsafe") && p.id === 10);
-    });
+    // 2. DÚVIDA OU DETALHES DE PRODUTO ESPECÍFICO
+    if (matchedProduct) {
+      const parcela12x = (matchedProduct.price / 12).toFixed(2).replace('.', ',');
 
-    if (matchedProduct && (q.includes("preco") || q.includes("quanto") || q.includes("valor") || q.includes("custa") || q.includes("informac") || q.includes("detalhe") || q.includes("sobre"))) {
+      // Se perguntou sobre estoque especificamente
+      if (q.includes("estoque") || q.includes("disponiv") || q.includes("tem pronta entrega") || q.includes("acabou")) {
+        addAgentMessageToRoom(
+          targetAgentId,
+          `Sim! Temos **${matchedProduct.stockCount} unidades** do **${matchedProduct.name}** em estoque físico com **pronta entrega** em nosso Centro de Distribuição! 📦<br><br>` +
+          `Despachamos em menos de 24 horas úteis com rastreamento Sedex e 2 anos de garantia oficial.`,
+          true,
+          matchedProduct
+        );
+        return;
+      }
+
+      // Se perguntou sobre parcelamento especificamente
+      if (q.includes("parcel") || q.includes("vezes") || q.includes("juros") || q.includes("cartao")) {
+        addAgentMessageToRoom(
+          targetAgentId,
+          `Sim! O **${matchedProduct.name}** pode ser parcelado em até **12x de R$ ${parcela12x} SEM JUROS** no cartão de crédito! 💳<br><br>` +
+          `• **À vista no Pix:** Aprovação instantânea e despacho mais rápido.<br>` +
+          `• **Cartões aceitos:** Visa, Mastercard, Elo, Amex e Apple Pay com proteção SSL 256-bit.`,
+          true,
+          matchedProduct
+        );
+        return;
+      }
+
+      // Resposta completa de apresentação de produto
       addAgentMessageToRoom(
         targetAgentId,
-        `O **${matchedProduct.name}** está saindo por **${formatMoney(matchedProduct.price)}** (de ~~${formatMoney(matchedProduct.originalPrice)}~~).<br><br>` +
-        `**Principais Destaques:**<br>` +
+        `O **${matchedProduct.name}** é um dos nossos destaques na TechHome! ⭐<br><br>` +
+        `• **Valor Promocional:** **${formatMoney(matchedProduct.price)}** (de ~~${formatMoney(matchedProduct.originalPrice)}~~ com **${matchedProduct.discountPercent}% OFF**)<br>` +
+        `• **Parcelamento:** Em até **12x de R$ ${parcela12x} sem juros** no cartão<br>` +
+        `• **Estoque:** ${matchedProduct.stockCount} unidades prontas para envio<br>` +
+        `• **Avaliação:** ${matchedProduct.rating}★ (${matchedProduct.reviewsCount} clientes satisfeitos)<br><br>` +
+        `**Destaques:**<br>` +
         matchedProduct.features.map(f => `• ${f}`).join('<br>') +
-        `<br><br>Ele possui nota **${matchedProduct.rating.toFixed(1)}/5 estrelas** e está com envio expresso!`,
+        `<br><br>💡 Use o cupom **DESCONTO20** na sacola para economizar ainda mais!`,
         true,
         matchedProduct
       );
       return;
     }
 
-    // 3. SAUDAÇÕES & CUMPRIMENTOS
-    if (/^(oi|ola|bom dia|boa tarde|boa noite|e ai|tudo bem|opa|fala|hey|hello)\b/.test(q)) {
+    // 3. PARCELAMENTO & JUROS GERAL
+    if (q.includes("parcel") || q.includes("quantas vezes") || q.includes("sem juros") || q.includes("juros")) {
       addAgentMessageToRoom(
         targetAgentId,
-        `Olá! Tudo ótimo por aqui! 😊<br>` +
-        `Sou **${agent.name}** (${agent.role}). Como posso te auxiliar com ${agent.specialty.toLowerCase()} hoje?`
+        `Parcelamos todas as suas compras em até **12x SEM JUROS** no Cartão de Crédito! 💳<br><br>` +
+        `• Aceitamos Visa, Mastercard, Elo, American Express e Apple Pay.<br>` +
+        `• O valor da parcela é dividido igualmente sem qualquer acréscimo de taxas.<br>` +
+        `• No Pix você tem aprovação imediata e despacho prioritário em nosso centro logístico!`
       );
       return;
     }
 
-    // 4. IDENTIDADE / QUEM É VOCÊ / É HUMANO?
-    if (q.includes("quem e voce") || q.includes("seu nome") || q.includes("robo") || q.includes("humano") || q.includes("pessoa") || q.includes("voce e real")) {
+    // 4. FORMAS DE PAGAMENTO / PIX / CARTÃO / BOLETO
+    if (q.includes("pagamento") || q.includes("pagar") || q.includes("pix") || q.includes("cartao") || q.includes("boleto") || q.includes("apple pay")) {
       addAgentMessageToRoom(
         targetAgentId,
-        `Sou **${agent.name}**, especialista em **${agent.specialty}** na NovaMart! 🤝<br><br>` +
-        `Aqui cada atendente possui sua própria sala de conversa individual para responder detalhadamente sobre a sua área de especialidade.`
+        `Trabalhamos com as formas de pagamento mais seguras do Brasil 💳:<br><br>` +
+        `• **Pix:** Aprovação instantânea via QR Code ou Copia e Cola (despacho no mesmo dia).<br>` +
+        `• **Cartão de Crédito:** Em até **12x sem juros** sem valor mínimo de parcela.<br>` +
+        `• **Apple Pay:** Pagamento por aproximação com biometria facial/digital.<br>` +
+        `• **Boleto Bancário:** Compensação bancária em até 1 dia útil.<br><br>` +
+        `Todas as transações contam com criptografia de ponta a ponta e emissão de Nota Fiscal Eletrônica.`
       );
       return;
     }
 
     // 5. CUPONS DE DESCONTO & PROMOÇÕES
-    if (q.includes("cupom") || q.includes("desconto") || q.includes("promo") || q.includes("codigo") || q.includes("oferta") || q.includes("voucher") || q.includes("barato")) {
+    if (q.includes("cupom") || q.includes("desconto") || q.includes("promo") || q.includes("codigo") || q.includes("oferta") || q.includes("voucher") || q.includes("barato") || q.includes("economizar")) {
       addAgentMessageToRoom(
         targetAgentId,
-        `Temos cupons especiais ativos para você hoje! 🎉<br><br>` +
-        `• **DESCONTO20** → Garante **20% de desconto** em todo o carrinho hoje.<br>` +
-        `• **FRETELIVRE** → Libera frete grátis sem valor mínimo.<br><br>` +
-        `Basta colar o código na gaveta do carrinho e clicar em **Aplicar**!`
+        `Temos cupons imperdíveis ativos para você aproveitar hoje! 🎉<br><br>` +
+        `• **DESCONTO20** → **20% de desconto imediato** em todos os produtos do carrinho!<br>` +
+        `• **FRETELIVRE** → **Frete Grátis** sem valor mínimo para qualquer lugar do Brasil.<br>` +
+        `• **BEMVINDO10** → 10% OFF para sua primeira compra na loja.<br><br>` +
+        `👉 **Como usar:** Abra o carrinho no canto superior direito, cole o código no campo de cupom e clique em **Aplicar**!`
       );
       return;
     }
 
-    // 6. RASTREIO DE PEDIDOS & STATUS DE ENTREGA
-    if (q.includes("rastre") || q.includes("meu pedido") || q.includes("onde esta") || q.includes("status") || q.includes("ord-") || q.includes("codigo de rastreio")) {
-      const match = userInput.match(/ORD-\d+/i);
-      const orderId = match ? match[0].toUpperCase() : "ORD-89241";
+    // 6. FRETE, PRAZOS DE ENTREGA & LOCALIDADES
+    if (q.includes("frete") || q.includes("entrega") || q.includes("prazo") || q.includes("demora") || q.includes("envio") || q.includes("tempo") || q.includes("sedex") || q.includes("cep") || q.includes("sao paulo") || q.includes("rio") || q.includes("minas") || q.includes("sul") || q.includes("nordeste") || q.includes("onde entrega") || q.includes("envia para")) {
       addAgentMessageToRoom(
         targetAgentId,
-        `Localizei o rastreamento do pedido **${orderId}** no sistema logístico 📦:<br><br>` +
-        `• **Status:** Em trânsito para o seu endereço (Sedex Expresso)<br>` +
-        `• **Última Atualização:** Despachado do Centro de Distribuição<br>` +
-        `• **Previsão de Chegada:** Próximo dia útil até às 17h<br><br>` +
-        `Se precisar alterar dados da entrega, pode falar comigo aqui!`
+        `Entregamos com rapidez em **todo o território brasileiro** via Sedex Expresso 🚚:<br><br>` +
+        `• **Capitais:** 2 a 4 dias úteis.<br>` +
+        `• **Interior e Demais Cidades:** 3 a 7 dias úteis.<br>` +
+        `• **Frete Grátis:** Automático para compras a partir de **R$ 250,00** ou com o cupom **FRETELIVRE**!<br>` +
+        `• **Rastreamento em Tempo Real:** Você recebe o código oficial dos Correios assim que o pedido for despachado.`
       );
       return;
     }
 
-    // 7. PRAZOS DE ENTREGA & FRETE
-    if (q.includes("prazo") || q.includes("frete") || q.includes("entrega") || q.includes("demora") || q.includes("envio") || q.includes("tempo")) {
+    // 7. SEGURANÇA, NOTA FISCAL, PRODUTO ORIGINAL & GARANTIA
+    if (q.includes("garantia") || q.includes("nota fiscal") || q.includes("original") || q.includes("seguro") || q.includes("confiavel") || q.includes("golpe") || q.includes("defeito") || q.includes("estragar") || q.includes("assistencia")) {
       addAgentMessageToRoom(
         targetAgentId,
-        `Prazos e condições de envio da NovaMart 🚚:<br><br>` +
-        `• **Capitais:** 2 a 4 dias úteis via Sedex Expresso.<br>` +
-        `• **Demais Regiões:** 3 a 7 dias úteis.<br>` +
-        `• **Frete Grátis:** Automático para compras a partir de **R$ 250,00**.`
+        `Sua compra na TechHome é 100% segura e protegida por lei 🛡️:<br><br>` +
+        `• **Garantia Total de 2 Anos:** Qualquer falha técnica ou de bateria conta com substituição expressa por uma unidade nova.<br>` +
+        `• **Nota Fiscal Eletrônica (NF-e):** Emitida no seu nome e CPF/CNPJ em todas as compras.<br>` +
+        `• **Produtos Originais:** Todos os itens são autênticos com certificação e selos de homologação.<br>` +
+        `• **30 Dias de Teste:** Se não ficar satisfeito por qualquer motivo, você devolve sem nenhum custo!`
       );
       return;
     }
 
-    // 8. FORMAS DE PAGAMENTO / PIX / CARTÃO / PARCELAMENTO
-    if (q.includes("pagamento") || q.includes("pagar") || q.includes("pix") || q.includes("cartao") || q.includes("parcel") || q.includes("boleto")) {
+    // 8. TROCAS, DEVOLUÇÕES & CANCELAMENTO
+    if (q.includes("troca") || q.includes("devol") || q.includes("reembols") || q.includes("cancel") || q.includes("arrependi") || q.includes("nao gostar")) {
       addAgentMessageToRoom(
         targetAgentId,
-        `Formas de pagamento aceitas com segurança 💳:<br><br>` +
-        `• **Pix:** Aprovação instantânea e despacho mais rápido.<br>` +
-        `• **Cartão de Crédito:** Em até **12x sem juros** (Visa, Master, Elo, Amex).<br>` +
-        `• **Boleto Bancário:** Compensação em até 1 dia útil.<br>` +
-        `• **Apple Pay:** Pagamento por aproximação com 256-bit SSL.`
+        `Nossa política de trocas é super simples e sem burocracia 🔄:<br><br>` +
+        `• **Prazo de 30 Dias:** Você tem 30 dias corridos a partir da entrega para testar o produto.<br>` +
+        `• **Logística Reversa Gratuita:** Fornecemos o código de postagem pré-pago dos Correios, sem nenhum custo para você.<br>` +
+        `• **Reembolso Integral:** Estorno total no mesmo meio de pagamento ou vale-compras imediato.`
       );
       return;
     }
 
-    // 9. TROCAS, DEVOLUÇÕES & REEMBOLSO
-    if (q.includes("troca") || q.includes("devol") || q.includes("reembols") || q.includes("cancel") || q.includes("arrependi")) {
-      addAgentMessageToRoom(
-        targetAgentId,
-        `Nossa política de devolução é transparente e sem complicações 🛡️:<br><br>` +
-        `• **30 Dias:** Para testar o produto com tranquilidade.<br>` +
-        `• **Etiqueta Grátis:** Geramos o frete reverso dos Correios sem nenhum custo.<br>` +
-        `• **Reembolso:** Estorno integral no mesmo método de pagamento.`
-      );
+    // 9. O QUE TEM NO MEU CARRINHO? / MEU PEDIDO
+    if (q.includes("meu carrinho") || q.includes("no carrinho") || q.includes("meu pedido") || q.includes("itens") || q.includes("sacola")) {
+      if (AppState.cart && AppState.cart.length > 0) {
+        const totalItems = AppState.cart.reduce((acc, i) => acc + i.quantity, 0);
+        const subtotal = AppState.cart.reduce((acc, i) => acc + i.price * i.quantity, 0);
+        addAgentMessageToRoom(
+          targetAgentId,
+          `Você possui **${totalItems} item(ns)** no carrinho totalizando **${formatMoney(subtotal)}**! 🛍️<br><br>` +
+          `Itens no carrinho:<br>` +
+          AppState.cart.map(i => `• ${i.quantity}x **${i.name}** (${formatMoney(i.price * i.quantity)})`).join('<br>') +
+          `<br><br>Para fechar o pedido, basta clicar no ícone do carrinho no topo da página e aplicar o cupom **DESCONTO20**!`
+        );
+      } else {
+        addAgentMessageToRoom(
+          targetAgentId,
+          `Seu carrinho está vazio no momento! 🛒<br><br>` +
+          `Que tal dar uma olhada em nossos produtos em destaque com desconto? Temos headphones com cancelamento de ruído, teclados mecânicos gamers e smartwatches em titânio!`
+        );
+      }
       return;
     }
 
-    // 10. GARANTIA & ASSISTÊNCIA TÉCNICA
-    if (q.includes("garantia") || q.includes("defeito") || q.includes("quebr") || q.includes("estrag") || q.includes("assistencia") || q.includes("original") || q.includes("nota fiscal")) {
-      addAgentMessageToRoom(
-        targetAgentId,
-        `Todos os produtos na NovaMart contam com **Garantia Total de 2 Anos** e Nota Fiscal Eletrônica! 📄<br><br>` +
-        `Cobrimos qualquer problema técnico de fábrica ou bateria com troca expressa por uma unidade nova.`
-      );
-      return;
-    }
-
-    // 11. RECOMENDAÇÃO DE FONES DE OUVIDO & SOM
-    if (q.includes("fone") || q.includes("audio") || q.includes("headphone") || q.includes("som") || q.includes("musica") || q.includes("ouvido") || q.includes("headset")) {
+    // 10. RECOMENDAÇÕES: FONES DE OUVIDO & ÁUDIO
+    if (q.includes("fone") || q.includes("audio") || q.includes("headphone") || q.includes("som") || q.includes("musica") || q.includes("ouvido") || q.includes("headset") || q.includes("caixa de som")) {
       const bestAudio = PRODUCTS.find(p => p.id === 1);
       addAgentMessageToRoom(
         targetAgentId,
-        `Recomendo fortemente o **Headphone Sem Fio Aura Pro ANC**! 🎧<br><br>` +
-        `Possui cancelamento ativo de ruído híbrido de 40dB, 45 horas de bateria e suporte ao codec LDAC de alta fidelidade:`,
+        `Para som imersivo de alta fidelidade, o campeão de vendas é o **Headphone Sem Fio Aura Pro ANC**! 🎧<br><br>` +
+        `Possui cancelamento ativo de ruído híbrido de 40dB, 45 horas de bateria contínua e drivers de 40mm de titânio:`,
         true,
         bestAudio
       );
       return;
     }
 
-    // 12. RECOMENDAÇÃO DE GAMES & PERIFÉRICOS
-    if (q.includes("teclado") || q.includes("mouse") || q.includes("gamer") || q.includes("jogo") || q.includes("mecanico")) {
+    // 11. RECOMENDAÇÕES: HARDWARE GAMER & PERIFÉRICOS
+    if (q.includes("teclado") || q.includes("mouse") || q.includes("gamer") || q.includes("jogo") || q.includes("mecanico") || q.includes("setup")) {
       const keyboard = PRODUCTS.find(p => p.id === 3);
       addAgentMessageToRoom(
         targetAgentId,
-        `Para jogos e digitação profissional, a melhor opção é o **Teclado Mecânico ApexStrike RGB**! 🎮<br><br>` +
-        `Vem com switches ópticos lineares de resposta imediata, estrutura gasket mounted e conexão sem fio tri-mode:`,
+        `Para jogos e produtividade em nível profissional, a melhor opção é o **Teclado Mecânico ApexStrike RGB**! 🎮<br><br>` +
+        `Vem com switches ópticos lineares de resposta instantânea, iluminação RGB personalizável e conexão tri-mode:`,
         true,
         keyboard
       );
       return;
     }
 
-    // 13. RECOMENDAÇÃO DE SMARTWATCHES & WEARABLES
-    if (q.includes("smartwatch") || q.includes("relogio") || q.includes("pulseira") || q.includes("treino") || q.includes("saude")) {
+    // 12. RECOMENDAÇÕES: SMARTWATCHES & SAÚDE
+    if (q.includes("smartwatch") || q.includes("relogio") || q.includes("pulseira") || q.includes("treino") || q.includes("saude") || q.includes("exercicio") || q.includes("corrida")) {
       const watch = PRODUCTS.find(p => p.id === 2);
       addAgentMessageToRoom(
         targetAgentId,
-        `Para treinos e saúde, recomendo o **Smartwatch ChronoMax Ultra 2**! ⌚<br><br>` +
-        `Estrutura em titânio, tela AMOLED de safira de 1000 nits, ECG contínuo e 14 dias de bateria:`,
+        `Para monitoramento esportivo e saúde, o mais avançado é o **Smartwatch ChronoMax Ultra 2**! ⌚<br><br>` +
+        `Construção em titânio aeroespacial, tela AMOLED de safira de 1000 nits, monitoramento contínuo de ECG e 14 dias de bateria:`,
         true,
         watch
       );
       return;
     }
 
+    // 13. RASTREIO DE PEDIDOS
+    if (q.includes("rastre") || q.includes("onde esta") || q.includes("status") || q.includes("ord-") || q.includes("codigo")) {
+      const match = userInput.match(/ORD-\d+/i);
+      const orderId = match ? match[0].toUpperCase() : "ORD-89241";
+      addAgentMessageToRoom(
+        targetAgentId,
+        `Localizei o rastreamento do pedido **${orderId}** no sistema logístico 📦:<br><br>` +
+        `• **Status:** Em trânsito para o seu endereço (Sedex Expresso)<br>` +
+        `• **Previsão de Chegada:** Próximo dia útil até às 17h<br>` +
+        `• **Garantia:** 2 anos de cobertura oficial ativa.<br><br>` +
+        `Se precisar alterar dados da entrega, estou aqui para te auxiliar!`
+      );
+      return;
+    }
+
     // 14. O QUE VOCÊS VENDEM? / CATÁLOGO GERAL
-    if (q.includes("produtos") || q.includes("catalogo") || q.includes("vende") || q.includes("tem na loja") || q.includes("quais")) {
+    if (q.includes("produtos") || q.includes("catalogo") || q.includes("vende") || q.includes("tem na loja") || q.includes("quais") || q.includes("categorias")) {
       addAgentMessageToRoom(
         targetAgentId,
-        `Temos uma linha completa de eletrônicos premium! 🚀<br><br>` +
-        `• 🎧 **Áudio & Som:** Headphones ANC e fones True Wireless.<br>` +
-        `• ⌚ **Smartwatches:** Relógios em titânio e anéis inteligentes.<br>` +
-        `• 🎮 **Games:** Teclados mecânicos e mouses ultraleves.<br>` +
-        `• 🏠 **Casa Inteligente:** Luminárias RGB com ritmo musical.<br>` +
-        `• 🔌 **Acessórios:** Carregadores GaN 100W e bases MagSafe.`
+        `Temos 10 produtos premium de alta tecnologia divididos em categorias 🚀:<br><br>` +
+        `• 🎧 **Áudio:** Headphone Aura Pro ANC (R$ 899) e Fones PulseBuds Pro TWS (R$ 299).<br>` +
+        `• ⌚ **Wearables:** Smartwatch ChronoMax Ultra 2 (R$ 1.299) e Anel Smart VitalRing (R$ 549).<br>` +
+        `• 🎮 **Games:** Teclado ApexStrike RGB (R$ 649) e Mouse ProGrip Wireless (R$ 389).<br>` +
+        `• 🏠 **Casa Inteligente:** Barra Luminária Smart Glow RGB (R$ 249) e Caixa SoundCore 360 (R$ 479).<br>` +
+        `• 🔌 **Acessórios:** Carregador GaN 100W (R$ 219) e Estação MagSafe 3 em 1 (R$ 349).<br><br>` +
+        `Qual dessas categorias você gostaria de conhecer em detalhes?`
       );
       return;
     }
 
-    // 15. ABRIR PROTOCOLO VIP
-    if (q.includes("protocolo") || q.includes("atendente") || q.includes("ticket") || q.includes("ajuda humana")) {
-      const randomTicket = "SUP-" + Math.floor(10000 + Math.random() * 90000);
+    // 15. SAUDAÇÕES & CUMPRIMENTOS
+    if (/^(oi|ola|bom dia|boa tarde|boa noite|e ai|tudo bem|opa|fala|hey|hello)\b/.test(q)) {
       addAgentMessageToRoom(
         targetAgentId,
-        `Protocolo de atendimento gerado na minha sala: **#${randomTicket}**! 📋<br><br>` +
-        `Estou à sua inteira disposição. Pode me enviar sua dúvida em detalhes!`,
-        true,
-        null,
-        randomTicket
+        `Olá! Tudo ótimo por aqui! 😊<br><br>` +
+        `Sou **${agent.name}**, especialista em **${agent.specialty.toLowerCase()}** na TechHome. Como posso te ajudar com a sua compra hoje? Pode me perguntar sobre preços, parcelamento em até 12x, frete ou cupons de desconto!`
       );
       return;
     }
 
-    // 16. RESPOSTA DE AGRADECIMENTO / DESPEDIDA
-    if (q.includes("obrigad") || q.includes("valeu") || q.includes("perfeito") || q.includes("otimo") || q.includes("show") || q.includes("tchau") || q.includes("ate mais")) {
+    // 16. IDENTIDADE / QUEM É VOCÊ / É HUMANO?
+    if (q.includes("quem e voce") || q.includes("seu nome") || q.includes("robo") || q.includes("humano") || q.includes("pessoa") || q.includes("voce e real") || q.includes("inteligencia artificial")) {
       addAgentMessageToRoom(
         targetAgentId,
-        `Por nada! Fico muito contente em ajudar! 😊 Se precisar de mais informações, nossa conversa fica salva aqui na minha sala. Boas compras!`
+        `Sou **${agent.name}**, especialista em **${agent.specialty}** na TechHome! 🤝<br><br>` +
+        `Nosso atendimento conta agora com o poder do **Google Gemini IA** para responder qualquer dúvida de compras, especificações e pedidos em tempo real.`
       );
       return;
     }
 
-    // 17. RESPOSTA PADRÃO PERSONALIZADA PELO PAPEL DO ESPECIALISTA
+    // 17. AGRADECIMENTO / DESPEDIDA
+    if (q.includes("obrigad") || q.includes("valeu") || q.includes("perfeito") || q.includes("otimo") || q.includes("show") || q.includes("tchau") || q.includes("ate mais") || q.includes("bom")) {
+      addAgentMessageToRoom(
+        targetAgentId,
+        `Por nada! Fico muito contente em ajudar! 😊 Se precisar de mais alguma coisa para fechar sua compra, estamos sempre por aqui. Boas compras na TechHome!`
+      );
+      return;
+    }
+
+    // 18. RESPOSTA PADRÃO INTELIGENTE COM ATALHOS DE COMPRA
     addAgentMessageToRoom(
       targetAgentId,
-      `Entendi sua pergunta! Como especialista em **${agent.specialty.toLowerCase()}**, posso tirar dúvidas sobre nossos produtos, prazo de entrega, descontos ou especificações técnicas.<br><br>` +
-      `Como posso te ajudar especificamente?`
+      `Entendi sua pergunta! Como especialista na TechHome, posso te orientar sobre **preços**, **parcelamento em até 12x sem juros**, **cupons de desconto ativos** (como o **DESCONTO20**), **prazos de entrega** ou detalhes técnicos dos produtos.<br><br>` +
+      `Como posso te ajudar a escolher o produto ideal para o seu dia a dia?`
     );
-    
+
     setTimeout(() => {
       DOM.chatFeedbackPrompt.style.display = "block";
       scrollChatToBottom();
     }, 4000);
-  }, 800);
+  }, 750);
 }
 
 function handleQuickAction(action) {
@@ -1773,25 +2237,25 @@ function closeModal(modal) {
 // ==========================================================================
 function attachEventListeners() {
   DOM.themeToggleBtn.addEventListener("click", toggleTheme);
-  
+
   DOM.globalSearchInput.addEventListener("input", (e) => {
     AppState.searchQuery = e.target.value;
     DOM.clearSearchBtn.style.display = e.target.value ? "flex" : "none";
     renderProducts();
   });
-  
+
   DOM.clearSearchBtn.addEventListener("click", () => {
     DOM.globalSearchInput.value = "";
     AppState.searchQuery = "";
     DOM.clearSearchBtn.style.display = "none";
     renderProducts();
   });
-  
+
   DOM.globalSearchForm.addEventListener("submit", (e) => {
     e.preventDefault();
     renderProducts();
   });
-  
+
   DOM.categoriesNav.addEventListener("click", (e) => {
     const pill = e.target.closest(".cat-pill");
     if (!pill) return;
@@ -1800,7 +2264,7 @@ function attachEventListeners() {
     renderProducts();
     SoundFx.playClick();
   });
-  
+
   document.querySelectorAll("[data-category]").forEach(link => {
     if (!link.classList.contains("cat-pill")) {
       link.addEventListener("click", () => {
@@ -1813,36 +2277,36 @@ function attachEventListeners() {
       });
     }
   });
-  
+
   DOM.sortSelect.addEventListener("change", (e) => {
     AppState.sortBy = e.target.value;
     renderProducts();
   });
-  
+
   DOM.priceMaxRange.addEventListener("input", (e) => {
     AppState.maxPrice = parseFloat(e.target.value);
     DOM.priceRangeValue.textContent = formatMoney(AppState.maxPrice);
     renderProducts();
   });
-  
+
   DOM.inStockCheckbox.addEventListener("change", (e) => {
     AppState.inStockOnly = e.target.checked;
     renderProducts();
   });
-  
+
   DOM.clearAllFiltersBtn.addEventListener("click", resetAllFilters);
   DOM.resetFiltersEmptyBtn.addEventListener("click", resetAllFilters);
   DOM.askSupportEmptyBtn.addEventListener("click", () => {
     openSupportChat();
   });
-  
+
   DOM.productsGrid.addEventListener("click", (e) => {
     const btn = e.target.closest("button");
     if (!btn) return;
-    
+
     const action = btn.dataset.action;
     const productId = parseInt(btn.dataset.id);
-    
+
     if (action === "add-to-cart") {
       addToCart(productId, 1);
     } else if (action === "toggle-wishlist") {
@@ -1853,13 +2317,13 @@ function attachEventListeners() {
       openSupportChatWithProduct(productId);
     }
   });
-  
+
   if (DOM.heroQuickBuyBtn) {
     DOM.heroQuickBuyBtn.addEventListener("click", () => {
       addToCart(1, 1);
     });
   }
-  
+
   // Eventos do Carrinho
   DOM.cartToggleBtn.addEventListener("click", () => openDrawer(DOM.cartDrawer));
   DOM.closeCartBtn.addEventListener("click", () => closeDrawer(DOM.cartDrawer));
@@ -1867,14 +2331,14 @@ function attachEventListeners() {
     closeDrawer(DOM.cartDrawer);
     closeDrawer(DOM.wishlistDrawer);
   });
-  
+
   DOM.cartItemsList.addEventListener("click", (e) => {
     const btn = e.target.closest("button");
     if (!btn) return;
     const action = btn.dataset.cartAction;
     const id = parseInt(btn.dataset.id);
     const item = AppState.cart.find(i => i.id === id);
-    
+
     if (action === "increase" && item) {
       updateCartQuantity(id, item.quantity + 1);
     } else if (action === "decrease" && item) {
@@ -1883,35 +2347,35 @@ function attachEventListeners() {
       removeFromCart(id);
     }
   });
-  
+
   DOM.applyPromoBtn.addEventListener("click", () => {
     applyPromoCode(DOM.promoCodeInput.value);
   });
-  
+
   DOM.promoCodeInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
       applyPromoCode(DOM.promoCodeInput.value);
     }
   });
-  
+
   DOM.proceedToCheckoutBtn.addEventListener("click", openCheckoutModal);
-  
+
   DOM.cartNeedHelpBtn.addEventListener("click", () => {
     closeDrawer(DOM.cartDrawer);
     openSupportChat();
   });
-  
+
   // Eventos dos Favoritos
   DOM.wishlistToggleBtn.addEventListener("click", () => openDrawer(DOM.wishlistDrawer));
   DOM.closeWishlistBtn.addEventListener("click", () => closeDrawer(DOM.wishlistDrawer));
-  
+
   DOM.wishlistItemsList.addEventListener("click", (e) => {
     const btn = e.target.closest("button");
     if (!btn) return;
     const action = btn.dataset.wishlistAction;
     const id = parseInt(btn.dataset.id);
-    
+
     if (action === "move-to-cart") {
       addToCart(id, 1);
       toggleWishlist(id);
@@ -1919,7 +2383,7 @@ function attachEventListeners() {
       toggleWishlist(id);
     }
   });
-  
+
   // Fechamento de Modais
   DOM.closeQuickViewBtn.addEventListener("click", () => closeModal(DOM.quickViewModal));
   DOM.closeCheckoutBtn.addEventListener("click", () => closeModal(DOM.checkoutModal));
@@ -1932,21 +2396,21 @@ function attachEventListeners() {
   DOM.orderSuccessModal.addEventListener("click", (e) => {
     if (e.target === DOM.orderSuccessModal) closeModal(DOM.orderSuccessModal);
   });
-  
+
   DOM.checkoutForm.addEventListener("submit", processCheckout);
-  
+
   document.querySelectorAll(".pay-tab").forEach(tab => {
     tab.addEventListener("click", () => {
       document.querySelectorAll(".pay-tab").forEach(t => t.classList.remove("active"));
       tab.classList.add("active");
     });
   });
-  
+
   DOM.copyOrderIdBtn.addEventListener("click", () => {
     navigator.clipboard.writeText(DOM.confirmedOrderId.textContent);
     showToast("Copiado com Sucesso! 📋", DOM.confirmedOrderId.textContent, "✓");
   });
-  
+
   DOM.trackInChatBtn.addEventListener("click", () => {
     const orderId = DOM.confirmedOrderId.textContent;
     closeModal(DOM.orderSuccessModal);
@@ -1954,11 +2418,11 @@ function attachEventListeners() {
     openSupportChat();
     sendUserMessage(`Como está o andamento do meu pedido ${orderId}?`);
   });
-  
+
   DOM.continueShoppingBtn.addEventListener("click", () => {
     closeModal(DOM.orderSuccessModal);
   });
-  
+
   // GATILHOS DO CHAT DE SUPORTE
   DOM.chatLauncherBtn.addEventListener("click", toggleSupportChat);
   DOM.closeChatWindowBtn.addEventListener("click", closeSupportChat);
@@ -1968,7 +2432,7 @@ function attachEventListeners() {
   DOM.calloutSupportBtn.addEventListener("click", openSupportChat);
   DOM.bannerOpenChatBtn.addEventListener("click", openSupportChat);
   DOM.footerChatBtn.addEventListener("click", openSupportChat);
-  
+
   DOM.footerTrackBtn.addEventListener("click", () => {
     switchAgent("david");
     openSupportChat();
@@ -1987,7 +2451,7 @@ function attachEventListeners() {
     DOM.chatTextInput.value = "Quais cupons de desconto estão ativos?";
     DOM.chatTextInput.focus();
   });
-  
+
   // CLIQUE NAS ABAS DE ESPECIALISTAS (SALAS SEPARADAS)
   if (DOM.chatAgentTabsBar) {
     DOM.chatAgentTabsBar.addEventListener("click", (e) => {
@@ -1997,33 +2461,33 @@ function attachEventListeners() {
       switchAgent(agentId);
     });
   }
-  
+
   // Menu de Troca de Atendentes via Dropdown
   DOM.switchAgentDropdownBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const isHidden = DOM.agentSelectMenu.style.display === "none";
     DOM.agentSelectMenu.style.display = isHidden ? "block" : "none";
   });
-  
+
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".dropdown-wrapper")) {
       DOM.agentSelectMenu.style.display = "none";
     }
   });
-  
+
   DOM.agentSelectMenu.addEventListener("click", (e) => {
     const opt = e.target.closest(".agent-select-opt");
     if (!opt) return;
     switchAgent(opt.dataset.agent);
   });
-  
+
   // Alternador de Som
   DOM.toggleSoundBtn.addEventListener("click", () => {
     AppState.soundEnabled = !AppState.soundEnabled;
     localStorage.setItem("novamart_sound", JSON.stringify(AppState.soundEnabled));
     const soundOn = DOM.toggleSoundBtn.querySelector(".sound-on-icon");
     const soundOff = DOM.toggleSoundBtn.querySelector(".sound-off-icon");
-    
+
     if (AppState.soundEnabled) {
       soundOn.style.display = "block";
       soundOff.style.display = "none";
@@ -2035,36 +2499,152 @@ function attachEventListeners() {
       showToast("Sons Desativados", "Notificações sonoras foram silenciadas", "🔇");
     }
   });
-  
+
   DOM.createTicketBtn.addEventListener("click", createNewSupportTicket);
-  
+
+  // ==========================================================================
+  // EVENTOS DE CONFIGURAÇÃO DO GOOGLE GEMINI IA
+  // ==========================================================================
+  if (DOM.geminiConfigBtn) {
+    DOM.geminiConfigBtn.addEventListener("click", openGeminiSettings);
+  }
+
+  if (DOM.geminiStatusBadge) {
+    DOM.geminiStatusBadge.addEventListener("click", openGeminiSettings);
+    DOM.geminiStatusBadge.style.cursor = "pointer";
+  }
+
+  if (DOM.bannerGeminiConfigBtn) {
+    DOM.bannerGeminiConfigBtn.addEventListener("click", openGeminiSettings);
+  }
+
+  if (DOM.bannerGeminiCloseBtn) {
+    DOM.bannerGeminiCloseBtn.addEventListener("click", () => {
+      DOM.chatGeminiBanner.style.display = "none";
+      AppState.gemini.bannerDismissed = true;
+      localStorage.setItem("techhome_gemini_banner_dismissed", "true");
+    });
+  }
+
+  if (DOM.closeGeminiSettingsBtn) {
+    DOM.closeGeminiSettingsBtn.addEventListener("click", closeGeminiSettings);
+  }
+
+  if (DOM.geminiSettingsModal) {
+    DOM.geminiSettingsModal.addEventListener("click", (e) => {
+      if (e.target === DOM.geminiSettingsModal) closeGeminiSettings();
+    });
+  }
+
+  if (DOM.toggleGeminiKeyBtn) {
+    DOM.toggleGeminiKeyBtn.addEventListener("click", () => {
+      const isPass = DOM.geminiApiKeyInput.type === "password";
+      DOM.geminiApiKeyInput.type = isPass ? "text" : "password";
+      DOM.toggleGeminiKeyBtn.textContent = isPass ? "🙈" : "👁️";
+    });
+  }
+
+  if (DOM.geminiTempRange) {
+    DOM.geminiTempRange.addEventListener("input", (e) => {
+      DOM.geminiTempValue.textContent = parseFloat(e.target.value).toFixed(1);
+    });
+  }
+
+  if (DOM.testGeminiConnectionBtn) {
+    DOM.testGeminiConnectionBtn.addEventListener("click", async () => {
+      const key = DOM.geminiApiKeyInput.value.trim();
+      const model = DOM.geminiModelSelect.value;
+
+      DOM.geminiTestFeedback.style.display = "block";
+      DOM.geminiTestFeedback.className = "gemini-test-feedback loading";
+      DOM.geminiTestFeedback.innerHTML = `⏳ Conectando e testando com o modelo <strong>${model}</strong>...`;
+      DOM.testGeminiConnectionBtn.disabled = true;
+
+      const res = await GeminiService.testConnection(key, model);
+      DOM.testGeminiConnectionBtn.disabled = false;
+
+      if (res.success) {
+        DOM.geminiTestFeedback.className = "gemini-test-feedback success";
+        DOM.geminiTestFeedback.innerHTML = `✅ <strong>Sucesso!</strong> A API do Google Gemini respondeu: <em>"${res.message}"</em>`;
+        SoundFx.playChime();
+      } else {
+        DOM.geminiTestFeedback.className = "gemini-test-feedback error";
+        DOM.geminiTestFeedback.innerHTML = `❌ <strong>Erro na Conexão:</strong> ${res.error}`;
+      }
+    });
+  }
+
+  if (DOM.geminiSettingsForm) {
+    DOM.geminiSettingsForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      AppState.gemini.enabled = DOM.geminiEnabledSwitch.checked;
+      AppState.gemini.apiKey = DOM.geminiApiKeyInput.value.trim();
+      AppState.gemini.model = DOM.geminiModelSelect.value;
+      AppState.gemini.temperature = parseFloat(DOM.geminiTempRange.value);
+
+      localStorage.setItem("techhome_gemini_enabled", JSON.stringify(AppState.gemini.enabled));
+      localStorage.setItem("techhome_gemini_key", AppState.gemini.apiKey);
+      localStorage.setItem("techhome_gemini_model", AppState.gemini.model);
+      localStorage.setItem("techhome_gemini_temp", AppState.gemini.temperature.toString());
+
+      updateGeminiStatusUI();
+      closeGeminiSettings();
+      SoundFx.playChime();
+
+      if (AppState.gemini.enabled && AppState.gemini.apiKey) {
+        showToast("Gemini IA Ativado! ✨", `Conectado com o modelo ${AppState.gemini.model}. Sarah, Alex e David estão prontos!`, "🤖");
+        if (DOM.chatGeminiBanner) DOM.chatGeminiBanner.style.display = "none";
+      } else if (!AppState.gemini.enabled) {
+        showToast("IA Desativada", "Chatbot operando com o motor inteligente local.", "ℹ️");
+      } else {
+        showToast("Configurações Salvas", "Insira sua API Key quando desejar ativar respostas em tempo real da IA.", "🔑");
+      }
+    });
+  }
+
+  if (DOM.clearGeminiKeyBtn) {
+    DOM.clearGeminiKeyBtn.addEventListener("click", () => {
+      DOM.geminiApiKeyInput.value = "";
+      AppState.gemini.apiKey = "";
+      localStorage.removeItem("techhome_gemini_key");
+
+      DOM.geminiTestFeedback.style.display = "block";
+      DOM.geminiTestFeedback.className = "gemini-test-feedback fallback";
+      DOM.geminiTestFeedback.innerHTML = `Chave removida. O chatbot operará no modo de demonstração local.`;
+
+      updateGeminiStatusUI();
+      showToast("Chave Removida", "Modo de demonstração local restaurado.", "ℹ️");
+    });
+  }
+
   DOM.chatQuickActions.addEventListener("click", (e) => {
     const chip = e.target.closest(".quick-chip");
     if (!chip) return;
     handleQuickAction(chip.dataset.action);
   });
-  
+
   DOM.chatMessageForm.addEventListener("submit", (e) => {
     e.preventDefault();
     sendUserMessage(DOM.chatTextInput.value);
   });
-  
+
   DOM.removeAttachedProductBtn.addEventListener("click", removeAttachedProduct);
-  
+
   DOM.chatEmojiBtn.addEventListener("click", () => {
     const emojis = ["😊", "👍", "🔥", "❤️", "⚡", "🎧", "📦", "🎉"];
     const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
     DOM.chatTextInput.value += " " + randomEmoji;
     DOM.chatTextInput.focus();
   });
-  
+
   DOM.chatFeedbackPrompt.addEventListener("click", (e) => {
     const starBtn = e.target.closest(".star-btn");
     if (!starBtn) return;
     DOM.chatFeedbackPrompt.innerHTML = `<p style="color:var(--accent-emerald);">⭐ Muito obrigado pela sua avaliação! Ficamos felizes em ajudar.</p>`;
     SoundFx.playChime();
   });
-  
+
   if (DOM.newsletterForm) {
     DOM.newsletterForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -2073,7 +2653,7 @@ function attachEventListeners() {
       input.value = "";
     });
   }
-  
+
   window.addEventListener("scroll", () => {
     const header = document.getElementById("siteHeader");
     if (window.scrollY > 40) {
