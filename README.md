@@ -1,16 +1,14 @@
-# Tech Store E-Commerce Interface
+# Work Description
+Developed a responsive front-end e-commerce interface for a technology store. The application presents tech products with an intuitive layout and incorporates an interactive floating chatbot assistant to enhance user engagement.
 
-A modern, responsive front-end e-commerce interface built for a technology store. This project features a dynamic product layout, interactive UI components, and an integrated floating AI chatbot assistant to enhance user engagement.
+# Requirements
+- Responsive HTML/CSS structure compatible with desktop and mobile browsers.
+- Dynamic layout design tailored for technology product showcases.
+- Interactive JavaScript functionality including a floating chatbot widget.
+- Clean, well-structured, and easy-to-maintain codebase.
 
-## Features
-- **Responsive Design:** Optimized for seamless viewing across mobile, tablet, and desktop screens.
-- **Dynamic Product Layout:** Clean grid and card structure for showcasing tech gadgets and products.
-- **Floating Chatbot Widget:** Interactive chat interface component built to simulate real-time customer support.
-- **Vanilla Tech Stack:** Fast loading times without third-party heavy dependencies.
+# Provided Material
+None.
 
-## Technologies Used
-- **HTML5:** Semantic structure and content.
-- **CSS3:** Custom styles, Flexbox, Grid, and responsive media queries.
-- **JavaScript (ES6+):** DOM manipulation, interactive chatbot mechanics, and UI logic.
-
-## Project Structure
+# Deliverables
+- Full source code directory containing `index.html`, `style.css`, `script.js`, and `README.md`.
